@@ -364,6 +364,27 @@
       <button class="cat-tab" onclick="switchRkTab('open', this)">💪 Open</button>
     </div>
     <div class="sumgrid" id="sumgrid"></div>
+
+    <!-- TEAM STANDINGS -->
+    <div style="margin-bottom:28px;">
+      <div class="sec-title" style="font-size:1.1rem;margin-bottom:14px;">🏟 Tabla de Posiciones</div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="tbl" id="standings-tbl">
+          <thead><tr>
+            <th>#</th>
+            <th>Equipo</th>
+            <th title="Partidos Jugados">PJ</th>
+            <th title="Victorias" style="color:#cc0008;">V</th>
+            <th title="Derrotas">D</th>
+            <th title="Goles a Favor">GF</th>
+            <th title="Goles en Contra">GC</th>
+            <th title="Diferencia de Goles">DIF</th>
+          </tr></thead>
+          <tbody id="standings-body"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="rk-grid" id="rkgrid"></div>
   </div>
 
@@ -1033,6 +1054,9 @@ function renderRankings() {
     { v: tD, l: 'Defensas' },
   ].map(b => `<div class="sumbox"><div class="sv">${b.v}</div><div class="sl">${b.l}</div></div>`).join('');
 
+  // ── TEAM STANDINGS ──
+  renderStandings(filteredMatches);
+
   const ranked = S.players.map(p => ({ p, s: getStatsByCategory(p.id, cat) }));
   const byGoals   = [...ranked].sort((a,b) => b.s.goals-a.s.goals).slice(0,8);
   const byAssists = [...ranked].sort((a,b) => b.s.assists-a.s.assists).slice(0,8);
@@ -1067,6 +1091,56 @@ function renderRankings() {
     </div>`;
 }
 
+function renderStandings(matches) {
+  const tbody = document.getElementById('standings-body');
+  if (!tbody) return;
+  if (!matches.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">Sin partidos registrados</td></tr>';
+    return;
+  }
+
+  // Build team stats map
+  const map = {};
+  const ensure = name => {
+    if (!name) return;
+    if (!map[name]) map[name] = { pj:0, v:0, d:0, gf:0, gc:0 };
+  };
+
+  matches.forEach(m => {
+    const tn = m.teamName || S.teams.find(t=>String(t.id)===String(m.teamId))?.name;
+    const rn = m.rivalName || S.teams.find(t=>String(t.id)===String(m.rivalId))?.name;
+    if (!tn || !rn) return;
+    ensure(tn); ensure(rn);
+    const ts = parseInt(m.teamScore)  || 0;
+    const rs = parseInt(m.rivalScore) || 0;
+    map[tn].pj++; map[tn].gf += ts; map[tn].gc += rs;
+    map[rn].pj++; map[rn].gf += rs; map[rn].gc += ts;
+    if (ts > rs)      { map[tn].v++; map[rn].d++; }
+    else if (rs > ts) { map[rn].v++; map[tn].d++; }
+  });
+
+  const standings = Object.entries(map)
+    .map(([name, s]) => ({ name, ...s, dif: s.gf - s.gc }))
+    .sort((a,b) => b.v - a.v || b.dif - a.dif || b.gf - a.gf);
+
+  if (!standings.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">Sin datos aún</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = standings.map((t, i) => `
+    <tr>
+      <td style="font-family:'Space Mono',monospace;color:var(--muted);font-size:0.8rem;">${i+1}</td>
+      <td><strong>${t.name}</strong></td>
+      <td style="text-align:center;color:var(--muted);">${t.pj}</td>
+      <td style="text-align:center;font-weight:700;color:#cc0008;">${t.v}</td>
+      <td style="text-align:center;color:var(--muted);">${t.d}</td>
+      <td style="text-align:center;">${t.gf}</td>
+      <td style="text-align:center;">${t.gc}</td>
+      <td style="text-align:center;font-weight:700;color:${t.dif>0?'#cc0008':t.dif<0?'#888':'var(--text)'};">${t.dif>0?'+':''}${t.dif}</td>
+    </tr>`).join('');
+}
+
 // ── MATCHES ──────────────────────────────────────────────
 function renderMatches() {
   const el = document.getElementById('mlist');
@@ -1097,8 +1171,10 @@ function renderMatches() {
           <span>${m.date?new Date(m.date+'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',month:'short',day:'numeric'}):'Sin fecha'}</span>
         </span>
         <span style="display:flex;gap:6px;">
+          ${_role === ROLES.admin ? `
           <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="editMatch('${m.id}')">✏️ Editar</button>
           <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteMatch('${m.id}')">🗑 Borrar</button>
+          ` : ''}
         </span>
       </div>
     </div>`;
