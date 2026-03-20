@@ -162,6 +162,17 @@
   .empty { text-align: center; padding: 40px; color: var(--muted); }
   .empty .ei { font-size: 2.6rem; margin-bottom: 8px; }
 
+  /* CATEGORY TABS */
+  .cat-tabs { display: flex; gap: 4px; margin-bottom: 22px; }
+  .cat-tab { padding: 9px 24px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); background: transparent; color: var(--muted); }
+  .cat-tab:hover { color: var(--text); border-color: var(--muted); }
+  .cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .cat-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+  .badge-mixta { background: rgba(255,255,255,0.12); color: #ffffff; }
+  .badge-open  { background: rgba(232,0,10,0.18); color: #ff3340; }
+  .match-filter { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .match-filter span { font-size: 0.8rem; color: var(--muted); }
+
   @media(max-width:800px){
     main{padding:18px 14px;} header{padding:16px 14px;} nav{padding:10px 14px;}
     .scan-layout,.rk-grid,.sumgrid{grid-template-columns:1fr;}
@@ -231,7 +242,20 @@
           </div>
           <div class="fr">
             <div><label>Fecha</label><input id="s-date" type="date"></div>
-            <div><label>Categoría / Ronda</label><input id="s-cat" type="text" placeholder="Mixta, Abierta..."></div>
+            <div><label>Categoría</label>
+              <select id="s-cat">
+                <option value="">— Seleccionar —</option>
+                <option value="Mixta">Mixta</option>
+                <option value="Open">Open</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label>Código de Planilla <span style="color:#ff3340">*</span></label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="s-code" type="number" min="1" placeholder="Ej: 001" style="max-width:120px;" oninput="checkCode()">
+              <span id="code-status" style="font-size:0.8rem;"></span>
+            </div>
           </div>
         </div>
 
@@ -253,6 +277,11 @@
   <!-- RANKINGS -->
   <div id="section-rankings" class="section">
     <div class="sec-title">Rankings del Torneo</div>
+    <div class="cat-tabs">
+      <button class="cat-tab active" onclick="switchRkTab('all', this)">🥏 Todas</button>
+      <button class="cat-tab" onclick="switchRkTab('mixta', this)">⚡ Mixta</button>
+      <button class="cat-tab" onclick="switchRkTab('open', this)">💪 Open</button>
+    </div>
     <div class="sumgrid" id="sumgrid"></div>
     <div class="rk-grid" id="rkgrid"></div>
   </div>
@@ -289,6 +318,12 @@
   <!-- MATCHES -->
   <div id="section-matches" class="section">
     <div class="sec-title">Partidos Registrados</div>
+    <div class="match-filter">
+      <span>Filtrar:</span>
+      <button class="cat-tab active" onclick="switchMatchTab('all', this)">Todos</button>
+      <button class="cat-tab" onclick="switchMatchTab('mixta', this)">⚡ Mixta</button>
+      <button class="cat-tab" onclick="switchMatchTab('open', this)">💪 Open</button>
+    </div>
     <div id="mlist"></div>
   </div>
 
@@ -327,6 +362,54 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL DUPLICATE ALERT -->
+<div class="overlay" id="om-duplicate">
+  <div class="modal" style="max-width:400px;">
+    <h2>⚠ PLANILLA DUPLICADA</h2>
+    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;">El código <strong id="dup-code" style="color:#ff3340;font-family:'Space Mono',monospace;"></strong> ya está registrado:</p>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;">
+      <p id="dup-info" style="font-size:0.9rem;text-align:center;font-weight:600;"></p>
+    </div>
+    <p style="font-size:0.84rem;color:var(--muted);margin-bottom:20px;">Si quieres reemplazarlo, ve a <strong>Partidos</strong> y borra el existente primero.</p>
+    <div class="macts">
+      <button class="btn bp" onclick="closeModal('om-duplicate')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT MATCH -->
+<div class="overlay" id="om-edit">
+  <div class="modal">
+    <h2>EDITAR PARTIDO</h2>
+    <input type="hidden" id="ed-id">
+    <div class="fg">
+      <div class="fr">
+        <div><label>Código</label><input id="ed-code" type="number" min="1"></div>
+        <div><label>Categoría</label>
+        <select id="ed-cat">
+          <option value="">— Seleccionar —</option>
+          <option value="Mixta">Mixta</option>
+          <option value="Open">Open</option>
+        </select>
+      </div>
+      </div>
+      <div class="fr">
+        <div><label>Equipo</label><input id="ed-team" type="text"></div>
+        <div><label>Adversario</label><input id="ed-rival" type="text"></div>
+      </div>
+      <div class="fr">
+        <div><label>Marcador — Equipo</label><input id="ed-score" type="number" min="0"></div>
+        <div><label>Marcador — Rival</label><input id="ed-rscore" type="number" min="0"></div>
+      </div>
+      <div><label>Fecha</label><input id="ed-date" type="date"></div>
+    </div>
+    <div class="macts">
+      <button class="btn bs" onclick="closeModal('om-edit')">Cancelar</button>
+      <button class="btn bp" onclick="saveEdit()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── STATE ────────────────────────────────────────────────
@@ -439,18 +522,64 @@ function delPlayer(id) {
 }
 
 // ── RANKINGS ─────────────────────────────────────────────
+let _rkTab = 'all';
+let _mTab  = 'all';
+
+function switchRkTab(tab, btn) {
+  _rkTab = tab;
+  document.querySelectorAll('.cat-tabs .cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRankings();
+}
+
+function switchMatchTab(tab, btn) {
+  _mTab = tab;
+  document.querySelectorAll('.match-filter .cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMatches();
+}
+
+function normalizeCategory(cat) {
+  if (!cat) return 'other';
+  const c = cat.toLowerCase();
+  if (c.includes('open') || c.includes('masculin') || c.includes('hombre')) return 'open';
+  if (c.includes('mix')) return 'mixta';
+  return 'other';
+}
+
+function getStatsByCategory(playerId, category) {
+  // Get matchIds that belong to this category
+  const matchIds = S.matches
+    .filter(m => category === 'all' || normalizeCategory(m.category) === category)
+    .map(m => m.id);
+  const rows = S.stats.filter(s => s.playerId === playerId && matchIds.includes(s.matchId));
+  return {
+    goals:    rows.reduce((a,s) => a+(s.goals||0), 0),
+    assists:  rows.reduce((a,s) => a+(s.assists||0), 0),
+    defenses: rows.reduce((a,s) => a+(s.defenses||0), 0),
+    matches:  new Set(rows.map(s=>s.matchId)).size,
+  };
+}
+
 function renderRankings() {
-  const tG = S.stats.reduce((a,s) => a+(s.goals||0), 0);
-  const tA = S.stats.reduce((a,s) => a+(s.assists||0), 0);
-  const tD = S.stats.reduce((a,s) => a+(s.defenses||0), 0);
+  const cat = _rkTab;
+  const filteredMatches = cat === 'all' ? S.matches : S.matches.filter(m => normalizeCategory(m.category) === cat);
+  const matchIds = filteredMatches.map(m => m.id);
+  const filteredStats = S.stats.filter(s => matchIds.includes(s.matchId));
+
+  const tG = filteredStats.reduce((a,s) => a+(s.goals||0), 0);
+  const tA = filteredStats.reduce((a,s) => a+(s.assists||0), 0);
+  const tD = filteredStats.reduce((a,s) => a+(s.defenses||0), 0);
+
+  const catLabel = cat === 'mixta' ? 'Mixta' : cat === 'open' ? 'Open' : 'General';
   document.getElementById('sumgrid').innerHTML = [
-    { v: S.matches.length, l: 'Partidos' },
-    { v: tG, l: 'Goles Totales' },
+    { v: filteredMatches.length, l: `Partidos ${catLabel}` },
+    { v: tG, l: 'Goles' },
     { v: tA, l: 'Asistencias' },
     { v: tD, l: 'Defensas' },
   ].map(b => `<div class="sumbox"><div class="sv">${b.v}</div><div class="sl">${b.l}</div></div>`).join('');
 
-  const ranked = S.players.map(p => ({ p, s: getStats(p.id) }));
+  const ranked = S.players.map(p => ({ p, s: getStatsByCategory(p.id, cat) }));
   const byGoals   = [...ranked].sort((a,b) => b.s.goals-a.s.goals).slice(0,8);
   const byAssists = [...ranked].sort((a,b) => b.s.assists-a.s.assists).slice(0,8);
   const byDef     = [...ranked].sort((a,b) => b.s.defenses-a.s.defenses).slice(0,8);
@@ -487,11 +616,18 @@ function renderRankings() {
 // ── MATCHES ──────────────────────────────────────────────
 function renderMatches() {
   const el = document.getElementById('mlist');
-  if (!S.matches.length) { el.innerHTML = '<div class="empty"><div class="ei">⚡</div><p>Sin partidos registrados</p></div>'; return; }
-  el.innerHTML = [...S.matches].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).map(m => {
+  const filtered = _mTab === 'all' ? S.matches : S.matches.filter(m => normalizeCategory(m.category) === _mTab);
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">⚡</div><p>Sin partidos en esta categoría</p></div>';
+    return;
+  }
+  el.innerHTML = [...filtered].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).map(m => {
     const tn = S.teams.find(t=>t.id===m.teamId)?.name || m.teamName || 'Equipo';
     const rn = S.teams.find(t=>t.id===m.rivalId)?.name || m.rivalName || 'Rival';
     const tw = m.teamScore > m.rivalScore, rw = m.rivalScore > m.teamScore;
+    const catN = normalizeCategory(m.category);
+    const badgeClass = catN === 'mixta' ? 'badge-mixta' : catN === 'open' ? 'badge-open' : '';
+    const badgeLabel = m.category || '';
     return `<div class="mcard">
       <div class="mt"><div class="mn">${tn}</div>${tw?'<div class="wt">GANADOR ✓</div>':''}</div>
       <div class="ms">
@@ -500,7 +636,17 @@ function renderMatches() {
         <div class="sn" style="${!rw?'color:var(--muted)':''}">${m.rivalScore}</div>
       </div>
       <div class="mt"><div class="mn">${rn}</div>${rw?'<div class="wt">GANADOR ✓</div>':''}</div>
-      ${m.date||m.category?`<div class="mmeta">${m.date?new Date(m.date+'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',year:'numeric',month:'long',day:'numeric'}):''}${m.category?' · '+m.category:''}</div>`:''}
+      <div class="mmeta" style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;">
+        <span style="display:flex;align-items:center;gap:8px;">
+          ${m.code ? `<span style="font-family:'Space Mono',monospace;background:rgba(232,0,10,0.15);color:#ff3340;padding:2px 8px;border-radius:4px;font-size:0.72rem;">#${m.code}</span>` : ''}
+          ${badgeLabel ? `<span class="cat-badge ${badgeClass}">${badgeLabel}</span>` : ''}
+          <span>${m.date?new Date(m.date+'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',month:'short',day:'numeric'}):'Sin fecha'}</span>
+        </span>
+        <span style="display:flex;gap:6px;">
+          <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="editMatch(${m.id})">✏️ Editar</button>
+          <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteMatch(${m.id})">🗑 Borrar</button>
+        </span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -634,8 +780,22 @@ Recuerda: X suma 1G y 1D. Z suma 1A y 1D. C suma 1G, 1A y 1D. Celdas vacias o il
 function saveMatch() {
   const teamName  = document.getElementById('s-team').value.trim();
   const rivalName = document.getElementById('s-rival').value.trim();
+  const code      = document.getElementById('s-code').value.trim();
   if (!teamName)  return toast('⚠ Falta el nombre del equipo');
   if (!rivalName) return toast('⚠ Falta el nombre del adversario');
+  if (!code)      return toast('⚠ Falta el código de planilla');
+
+  // Duplicate check: mismo código Y mismo equipo = duplicado real
+  const existing = S.matches.find(m =>
+    m.code === code &&
+    (m.teamName?.toLowerCase() === teamName.toLowerCase() || m.rivalName?.toLowerCase() === teamName.toLowerCase())
+  );
+  if (existing) {
+    const tn = S.teams.find(t=>t.id===existing.teamId)?.name || existing.teamName || 'Equipo';
+    const rn = S.teams.find(t=>t.id===existing.rivalId)?.name || existing.rivalName || 'Rival';
+    showDuplicateAlert(code, tn, rn, existing.date);
+    return;
+  }
 
   const teamScore  = parseInt(document.getElementById('s-score').value)||0;
   const rivalScore = parseInt(document.getElementById('s-rscore').value)||0;
@@ -644,12 +804,12 @@ function saveMatch() {
 
   // Auto-create teams
   let team  = S.teams.find(t => t.name.toLowerCase()===teamName.toLowerCase());
-  if (!team)  { team  = {id:Date.now(),   name:teamName,  city:'',color:'#00e87a'}; S.teams.push(team); }
+  if (!team)  { team  = {id:Date.now(),   name:teamName,  city:'',color:'#e8000a'}; S.teams.push(team); }
   let rival = S.teams.find(t => t.name.toLowerCase()===rivalName.toLowerCase());
-  if (!rival) { rival = {id:Date.now()+1, name:rivalName, city:'',color:'#ff5c2b'}; S.teams.push(rival); }
+  if (!rival) { rival = {id:Date.now()+1, name:rivalName, city:'',color:'#888888'}; S.teams.push(rival); }
 
   const matchId = Date.now()+2;
-  S.matches.push({ id:matchId, teamId:team.id, rivalId:rival.id, teamName, rivalName, teamScore, rivalScore, category, date });
+  S.matches.push({ id:matchId, code, teamId:team.id, rivalId:rival.id, teamName, rivalName, teamScore, rivalScore, category, date });
 
   // Save player stats
   const sc = window._sc;
@@ -673,10 +833,105 @@ function saveMatch() {
   save();
   toast('✓ Partido guardado exitosamente');
   window._sc = null;
-  ['s-team','s-rival','s-score','s-rscore','s-cat','s-date'].forEach(id => document.getElementById(id).value='');
+  ['s-team','s-rival','s-score','s-rscore','s-cat','s-date','s-code'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('code-status').textContent='';
   document.getElementById('sp-section').style.display='none';
   document.getElementById('sp-list').innerHTML='';
   setStatus('');
+}
+
+// ── CODE CHECK ───────────────────────────────────────────
+function checkCode() {
+  const code = document.getElementById('s-code').value.trim();
+  const teamName = document.getElementById('s-team').value.trim().toLowerCase();
+  const el = document.getElementById('code-status');
+  if (!code) { el.textContent=''; return; }
+
+  // Find all matches with this code
+  const withCode = S.matches.filter(m => m.code === code);
+  if (!withCode.length) {
+    el.innerHTML = '<span style="color:#ff6670">✓ Código disponible</span>';
+    return;
+  }
+
+  // Check if current team already has this code
+  const duplicate = withCode.find(m =>
+    teamName && (
+      m.teamName?.toLowerCase() === teamName ||
+      m.rivalName?.toLowerCase() === teamName
+    )
+  );
+
+  if (duplicate) {
+    const tn = duplicate.teamName || '?';
+    const rn = duplicate.rivalName || '?';
+    el.innerHTML = `<span style="color:#ff3340">⚠ Tu equipo ya tiene este código: ${tn} vs ${rn}</span>`;
+  } else {
+    // Code exists but for a different team — that's fine
+    const teams = withCode.map(m => m.teamName).join(', ');
+    el.innerHTML = `<span style="color:#ff6670">✓ Disponible — ya usado por: ${teams}</span>`;
+  }
+}
+
+function showDuplicateAlert(code, tn, rn, date) {
+  document.getElementById('dup-code').textContent = code;
+  document.getElementById('dup-info').textContent = `${tn} vs ${rn}${date?' · '+date:''}`;
+  document.getElementById('om-duplicate').classList.add('open');
+}
+
+// ── DELETE MATCH ──────────────────────────────────────────
+function deleteMatch(id) {
+  if (!confirm('¿Eliminar este partido y todas sus estadísticas?')) return;
+  S.stats = S.stats.filter(s => s.matchId !== id);
+  S.matches = S.matches.filter(m => m.id !== id);
+  save(); renderMatches(); toast('✓ Partido eliminado');
+}
+
+// ── EDIT MATCH ────────────────────────────────────────────
+function editMatch(id) {
+  const m = S.matches.find(x => x.id===id);
+  if (!m) return;
+  const tn = S.teams.find(t=>t.id===m.teamId)?.name || m.teamName || '';
+  const rn = S.teams.find(t=>t.id===m.rivalId)?.name || m.rivalName || '';
+  document.getElementById('ed-id').value = id;
+  document.getElementById('ed-code').value = m.code || '';
+  document.getElementById('ed-team').value = tn;
+  document.getElementById('ed-rival').value = rn;
+  document.getElementById('ed-score').value = m.teamScore || 0;
+  document.getElementById('ed-rscore').value = m.rivalScore || 0;
+  document.getElementById('ed-date').value = m.date || '';
+  const edCat = document.getElementById('ed-cat'); edCat.value = m.category || '';
+  document.getElementById('om-edit').classList.add('open');
+}
+
+function saveEdit() {
+  const id = parseInt(document.getElementById('ed-id').value);
+  const code = document.getElementById('ed-code').value.trim();
+  const m = S.matches.find(x => x.id===id);
+  if (!m) return;
+
+  // Check code conflict: mismo código + mismo equipo en OTRO partido
+  const newTeamName = document.getElementById('ed-team').value.trim().toLowerCase();
+  const conflict = S.matches.find(x =>
+    x.code===code && x.id!==id &&
+    (x.teamName?.toLowerCase()===newTeamName || x.rivalName?.toLowerCase()===newTeamName)
+  );
+  if (conflict) {
+    return toast(`⚠ Este equipo ya tiene una planilla con código ${code}`);
+  }
+
+  m.code      = code;
+  m.teamScore  = parseInt(document.getElementById('ed-score').value)||0;
+  m.rivalScore = parseInt(document.getElementById('ed-rscore').value)||0;
+  m.date       = document.getElementById('ed-date').value;
+  m.category   = document.getElementById('ed-cat').value.trim();
+  // Update names too
+  const newTn = document.getElementById('ed-team').value.trim();
+  const newRn = document.getElementById('ed-rival').value.trim();
+  if (newTn) m.teamName = newTn;
+  if (newRn) m.rivalName = newRn;
+
+  save(); closeModal('om-edit'); renderMatches(); toast('✓ Partido actualizado');
 }
 
 // ── EXPORT ───────────────────────────────────────────────
