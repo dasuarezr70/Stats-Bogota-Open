@@ -926,7 +926,7 @@ function renderTeams() {
     return `<div class="tcard">
       <div style="margin-bottom:7px;"><span class="tdot" style="background:${t.color}"></span><span class="tname">${t.name}</span></div>
       <div class="tmeta">${t.city||'Sin ciudad'} · ${n} jugadores · ${w} victorias</div>
-      <div style="margin-top:11px;"><button class="btn bd" onclick="delTeam(${t.id})">Eliminar</button></div>
+      <div style="margin-top:11px;"><button class="btn bd" onclick="delTeam('${t.id}')">Eliminar</button></div>
     </div>`;
   }).join('');
 }
@@ -962,7 +962,7 @@ function renderPlayers() {
       <td><span class="pill pa">${s.assists}</span></td>
       <td><span class="pill pd">${s.defenses}</span></td>
       <td style="color:var(--muted);font-size:0.84rem;">${s.matches}</td>
-      <td><button class="btn bd" onclick="delPlayer(${p.id})">×</button></td>
+      <td><button class="btn bd" onclick="delPlayer('${p.id}')">×</button></td>
     </tr>`;
   }).join('');
 }
@@ -1097,8 +1097,8 @@ function renderMatches() {
           <span>${m.date?new Date(m.date+'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',month:'short',day:'numeric'}):'Sin fecha'}</span>
         </span>
         <span style="display:flex;gap:6px;">
-          <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="editMatch(${m.id})">✏️ Editar</button>
-          <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteMatch(${m.id})">🗑 Borrar</button>
+          <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="editMatch('${m.id}')">✏️ Editar</button>
+          <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteMatch('${m.id}')">🗑 Borrar</button>
         </span>
       </div>
     </div>`;
