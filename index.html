@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Stats — Torneo</title>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCX5ZwBUFPhGB-biI4Shg192re9S2QgQbM",
+    authDomain: "stats-3b2bd.firebaseapp.com",
+    projectId: "stats-3b2bd",
+    storageBucket: "stats-3b2bd.firebasestorage.app",
+    messagingSenderId: "1032100630573",
+    appId: "1:1032100630573:web:87028da2949fd6d1e1a8a4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  window._db = db;
+  window._fs = { collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, query, orderBy };
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -178,6 +198,45 @@
     .scan-layout,.rk-grid,.sumgrid{grid-template-columns:1fr;}
     .mcard{grid-template-columns:1fr;}
   }
+
+  /* LIVE MATCH */
+  .live-scoreboard { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px 24px; margin-bottom:24px; }
+  .live-team-name  { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:2px; }
+  .live-team-a     { text-align:left; }
+  .live-team-b     { text-align:right; }
+  .live-score-box  { display:flex; align-items:center; gap:10px; justify-content:center; }
+  .live-score      { font-family:'Bebas Neue',sans-serif; font-size:3.5rem; line-height:1; color:#ff3340; min-width:48px; text-align:center; }
+  .live-sep        { font-family:'Space Mono',monospace; color:var(--muted); font-size:1.4rem; }
+  .live-phase      { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; text-align:center; margin-top:4px; }
+
+  .live-columns    { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .live-col        { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .live-col-header { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .live-col-title  { font-family:'Bebas Neue',sans-serif; font-size:1.05rem; letter-spacing:2px; }
+  .live-col-badge  { font-family:'Space Mono',monospace; font-size:0.65rem; padding:2px 8px; border-radius:10px; }
+
+  .live-player     { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid rgba(80,0,0,0.4); transition:background 0.15s; }
+  .live-player:last-child { border-bottom:none; }
+  .live-player:hover { background:rgba(232,0,10,0.04); }
+  .live-pname      { font-size:0.875rem; font-weight:500; }
+  .live-pstats     { display:flex; gap:6px; align-items:center; }
+  .live-stat-btn   { width:28px; height:28px; border-radius:6px; border:none; cursor:pointer; font-family:'Space Mono',monospace; font-size:0.72rem; font-weight:700; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+  .live-stat-btn:hover { transform:scale(1.12); }
+  .lbg { background:rgba(232,0,10,0.18); color:#ff3340; }
+  .lba { background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.2); }
+  .lbd { background:rgba(200,200,200,0.12); color:#ccc; }
+  .lbc { background:rgba(232,0,10,0.28); color:#fff; border:1px solid #e8000a; }
+
+  .live-setup      { max-width:520px; margin:0 auto; }
+  .live-setup .panel { margin-bottom:16px; }
+  .live-actions    { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .live-log        { margin-top:16px; max-height:180px; overflow-y:auto; }
+  .live-log-item   { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--muted); padding:4px 0; border-bottom:1px solid rgba(80,0,0,0.3); display:flex; justify-content:space-between; align-items:center; }
+  .live-log-undo   { cursor:pointer; color:#ff3340; font-size:0.8rem; padding:2px 6px; border-radius:4px; transition:background 0.15s; }
+  .live-log-undo:hover { background:rgba(232,0,10,0.15); }
+
+  .loading-spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+
 </style>
 </head>
 <body>
@@ -191,7 +250,7 @@
 </header>
 
 <nav>
-  <button class="active" onclick="go('scan',this)">📸 Escanear Planilla</button>
+  <button class="active" onclick="go('live',this)">⚡ En Vivo</button>
   <button onclick="go('rankings',this)">🏆 Rankings</button>
   <button onclick="go('players',this)">👤 Jugadores</button>
   <button onclick="go('teams',this)">🏟 Equipos</button>
@@ -201,75 +260,90 @@
 
 <main>
 
-  <!-- SCAN -->
-  <div id="section-scan" class="section active">
-    <div class="sec-title">Escanear Planilla</div>
-    <div class="scan-layout">
-      <div>
-        <div class="dropzone" id="dz">
-          <input type="file" id="fi" accept="image/*">
-          <span class="dz-icon">🥏</span>
-          <h3>Sube o arrastra la foto</h3>
-          <p>La IA leerá las siglas <strong style="color:var(--accent)">G A D X Z C</strong> en cada fila de jugador y sumará las estadísticas correctamente.</p>
-        </div>
-        <img id="preview-img" alt="">
-        <div style="margin-top:13px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn bp" id="scan-btn" onclick="scanImage()" disabled>🔍 Analizar con IA</button>
-          <button class="btn bs" onclick="document.getElementById('fi').click()">📁 Elegir archivo</button>
-        </div>
-        <div class="loading-bar" id="lb"></div>
-        <div class="status" id="st"></div>
-        <div class="gad-legend">
-          <div class="gad-item"><span class="pill pg">G</span> Gol</div>
-          <div class="gad-item"><span class="pill pa">A</span> Asistencia</div>
-          <div class="gad-item"><span class="pill pd">D</span> Defensa</div>
-          <div class="gad-item"><span class="pill px">X</span> Gol + Defensa</div>
-          <div class="gad-item"><span class="pill pz">Z</span> Ast + Defensa</div>
-          <div class="gad-item"><span class="pill pc">C</span> Callahan</div>
-        </div>
-      </div>
+  <!-- LIVE MATCH -->
+  <div id="section-live" class="section active">
+    <div class="sec-title">Partido en Vivo</div>
 
+    <!-- SETUP PANEL -->
+    <div id="live-setup-panel" class="live-setup">
       <div class="panel">
-        <h3>📋 DATOS EXTRAÍDOS</h3>
+        <h3>⚡ CONFIGURAR PARTIDO</h3>
         <div class="fg">
           <div class="fr">
-            <div><label>Equipo (planilla)</label><input id="s-team" type="text" placeholder="Ej: Aerosoul"></div>
-            <div><label>Adversario</label><input id="s-rival" type="text" placeholder="Rival"></div>
+            <div>
+              <label>Equipo A</label>
+              <select id="live-team-a"><option value="">— Cargando equipos… —</option></select>
+            </div>
+            <div>
+              <label>Equipo B</label>
+              <select id="live-team-b"><option value="">— Cargando equipos… —</option></select>
+            </div>
           </div>
           <div class="fr">
-            <div><label>Marcador — Equipo</label><input id="s-score" type="number" min="0" placeholder="0"></div>
-            <div><label>Marcador — Rival</label><input id="s-rscore" type="number" min="0" placeholder="0"></div>
-          </div>
-          <div class="fr">
-            <div><label>Fecha</label><input id="s-date" type="date"></div>
-            <div><label>Categoría</label>
-              <select id="s-cat">
+            <div>
+              <label>Categoría</label>
+              <select id="live-cat">
                 <option value="">— Seleccionar —</option>
                 <option value="Mixta">Mixta</option>
                 <option value="Open">Open</option>
               </select>
             </div>
-          </div>
-          <div>
-            <label>Código de Planilla <span style="color:#ff3340">*</span></label>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input id="s-code" type="number" min="1" placeholder="Ej: 001" style="max-width:120px;" oninput="checkCode()">
-              <span id="code-status" style="font-size:0.8rem;"></span>
+            <div>
+              <label>Fase / Ronda</label>
+              <select id="live-phase">
+                <option value="">— Seleccionar —</option>
+                <option value="Grupos">Grupos</option>
+                <option value="Cuartos">Cuartos de Final</option>
+                <option value="Semi">Semifinal</option>
+                <option value="Final">Final</option>
+              </select>
             </div>
           </div>
-        </div>
-
-        <div id="sp-section" style="display:none;">
-          <div style="display:grid;grid-template-columns:1fr 52px 52px 52px;gap:6px;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:2px;">
-            <span style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;align-self:center;">Jugador</span>
-            <span class="pill pg" style="justify-self:center;">G</span>
-            <span class="pill pa" style="justify-self:center;">A</span>
-            <span class="pill pd" style="justify-self:center;">D</span>
+          <div>
+            <label>Fecha</label>
+            <input id="live-date" type="date">
           </div>
-          <div id="sp-list"></div>
         </div>
+        <div id="live-setup-status" class="status" style="margin-top:8px;"></div>
+      </div>
+      <button class="btn bp" style="width:100%;" onclick="startLiveMatch()">⚡ Iniciar Partido</button>
+      <div style="margin-top:12px;text-align:center;">
+        <button class="btn bs" style="font-size:0.78rem;" onclick="reloadSheets()"><span id="sheets-spin" style="display:none;" class="loading-spinner"></span>🔄 Recargar jugadores desde Sheets</button>
+      </div>
+    </div>
 
-        <button class="btn bp" style="margin-top:16px;width:100%;" onclick="saveMatch()">💾 Guardar Partido</button>
+    <!-- LIVE SCOREBOARD + PLAYERS (hidden until match started) -->
+    <div id="live-match-panel" style="display:none;">
+      <div class="live-scoreboard">
+        <div class="live-team-a">
+          <div class="live-team-name" id="sb-name-a">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:3px;" id="sb-cat-a"></div>
+        </div>
+        <div>
+          <div class="live-score-box">
+            <div class="live-score" id="sb-score-a">0</div>
+            <div class="live-sep">:</div>
+            <div class="live-score" id="sb-score-b">0</div>
+          </div>
+          <div class="live-phase" id="sb-phase">—</div>
+        </div>
+        <div class="live-team-b">
+          <div class="live-team-name" id="sb-name-b">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:3px;text-align:right;" id="sb-cat-b"></div>
+        </div>
+      </div>
+
+      <div class="live-columns" id="live-columns"></div>
+
+      <div style="margin-top:16px;">
+        <div style="font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Registro de eventos</div>
+        <div class="live-log" id="live-log"></div>
+      </div>
+
+      <div class="live-actions">
+        <button class="btn bs" onclick="undoLast()">↩ Deshacer último</button>
+        <button class="btn bp" onclick="closeLiveMatch()">🏁 Cerrar Partido</button>
+        <button class="btn bd" onclick="cancelLiveMatch()">✕ Cancelar</button>
       </div>
     </div>
   </div>
@@ -414,8 +488,283 @@
 <script>
 // ── STATE ────────────────────────────────────────────────
 let S = { teams:[], players:[], matches:[], stats:[] };
-try { const s = localStorage.getItem('uf_v3'); if(s) S = JSON.parse(s); } catch(e){}
-const save = () => localStorage.setItem('uf_v3', JSON.stringify(S));
+let _db = null, _fs = null, _fbReady = false;
+
+// Sheets public CSV URL
+const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTNSNK7eOKov5dywy43dzrNOaEaCSFc6F4yzd7jzeZGWi2SSjzGrfW9Ae9zS9rOJa9BYah6Oi7-UvTE/pub?output=csv';
+
+// Wait for Firebase module to load
+window.addEventListener('firebase-ready', async () => {
+  _db = window._db; _fs = window._fs; _fbReady = true;
+  await loadFromFirebase();
+  renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+  await loadSheetsPlayers();
+});
+
+// ── FIREBASE LOAD ────────────────────────────────────────
+async function loadFromFirebase() {
+  if (!_db) return;
+  const { collection, getDocs } = _fs;
+  try {
+    const [teamsSnap, playersSnap, matchesSnap, statsSnap] = await Promise.all([
+      getDocs(collection(_db,'teams')),
+      getDocs(collection(_db,'players')),
+      getDocs(collection(_db,'matches')),
+      getDocs(collection(_db,'stats')),
+    ]);
+    S.teams   = teamsSnap.docs.map(d => d.data());
+    S.players = playersSnap.docs.map(d => d.data());
+    S.matches = matchesSnap.docs.map(d => d.data());
+    S.stats   = statsSnap.docs.map(d => d.data());
+  } catch(e) { console.error('Firebase load error', e); }
+}
+
+// ── FIREBASE SAVE ────────────────────────────────────────
+async function saveDoc(colName, obj) {
+  if (!_db) return;
+  const { collection, doc, setDoc } = _fs;
+  await setDoc(doc(collection(_db, colName), String(obj.id)), obj);
+}
+async function deleteFireDoc(colName, id) {
+  if (!_db) return;
+  const { collection, doc, deleteDoc } = _fs;
+  await deleteDoc(doc(collection(_db, colName), String(id)));
+}
+
+// Legacy save shim (keeps existing code working)
+const save = () => {}; // no-op — Firebase is source of truth
+
+// ── SHEETS LOADER ────────────────────────────────────────
+let _sheetsData = []; // { name, equipo, rama }
+
+async function loadSheetsPlayers() {
+  const spin = document.getElementById('sheets-spin');
+  if (spin) spin.style.display = 'inline-block';
+  try {
+    const resp = await fetch(SHEETS_URL);
+    const text = await resp.text();
+    const rows = text.trim().split('\n').slice(1); // skip header
+    _sheetsData = rows.map(r => {
+      const cols = r.split(',');
+      return { name: (cols[0]||'').trim().replace(/^"|"$/g,''), rama: (cols[1]||'').trim().replace(/^"|"$/g,''), equipo: (cols[2]||'').trim().replace(/^"|"$/g,'') };
+    }).filter(r => r.name && r.equipo);
+    populateLiveTeamSelects();
+    if (spin) spin.style.display = 'none';
+    toast('✓ Jugadores cargados desde Sheets');
+  } catch(e) {
+    if (spin) spin.style.display = 'none';
+    console.error('Sheets load error', e);
+    toast('⚠ No se pudo cargar el Sheets — usando datos locales');
+    populateLiveTeamSelects();
+  }
+}
+
+function reloadSheets() { loadSheetsPlayers(); }
+
+function getTeamsFromSheets() {
+  const map = {};
+  _sheetsData.forEach(r => { if (!map[r.equipo]) map[r.equipo] = []; map[r.equipo].push(r); });
+  return map;
+}
+
+function populateLiveTeamSelects() {
+  const teams = Object.keys(getTeamsFromSheets()).sort();
+  const opts = '<option value="">— Seleccionar —</option>' + teams.map(t => `<option value="${t}">${t}</option>`).join('');
+  const selA = document.getElementById('live-team-a');
+  const selB = document.getElementById('live-team-b');
+  if (selA) selA.innerHTML = opts;
+  if (selB) selB.innerHTML = opts;
+}
+
+// ── LIVE MATCH STATE ─────────────────────────────────────
+let _live = null; // { matchId, teamA, teamB, scoreA, scoreB, phase, cat, date, events[] }
+
+function startLiveMatch() {
+  const teamA = document.getElementById('live-team-a').value.trim();
+  const teamB = document.getElementById('live-team-b').value.trim();
+  const cat   = document.getElementById('live-cat').value.trim();
+  const phase = document.getElementById('live-phase').value.trim();
+  const date  = document.getElementById('live-date').value;
+  const statusEl = document.getElementById('live-setup-status');
+
+  if (!teamA) return showLiveStatus('⚠ Selecciona el Equipo A', 'err');
+  if (!teamB) return showLiveStatus('⚠ Selecciona el Equipo B', 'err');
+  if (teamA === teamB) return showLiveStatus('⚠ Los equipos no pueden ser iguales', 'err');
+  if (!cat)   return showLiveStatus('⚠ Selecciona la categoría', 'err');
+  if (!phase) return showLiveStatus('⚠ Selecciona la fase', 'err');
+
+  // Anti-duplicate check
+  const dup = S.matches.find(m =>
+    normalizeCategory(m.category) === normalizeCategory(cat) &&
+    m.phase === phase &&
+    ((m.teamName?.toLowerCase() === teamA.toLowerCase() && m.rivalName?.toLowerCase() === teamB.toLowerCase()) ||
+     (m.teamName?.toLowerCase() === teamB.toLowerCase() && m.rivalName?.toLowerCase() === teamA.toLowerCase()))
+  );
+  if (dup) return showLiveStatus(`⚠ Ya existe un partido ${teamA} vs ${teamB} en ${phase}`, 'err');
+
+  const matchId = 'live_' + Date.now();
+  _live = { matchId, teamA, teamB, scoreA:0, scoreB:0, phase, cat, date, events:[] };
+
+  document.getElementById('live-setup-panel').style.display = 'none';
+  document.getElementById('live-match-panel').style.display = 'block';
+  renderLiveScoreboard();
+  renderLiveColumns();
+  renderLiveLog();
+}
+
+function showLiveStatus(msg, cls) {
+  const el = document.getElementById('live-setup-status');
+  el.textContent = msg; el.className = 'status ' + cls;
+}
+
+function renderLiveScoreboard() {
+  if (!_live) return;
+  document.getElementById('sb-name-a').textContent  = _live.teamA;
+  document.getElementById('sb-name-b').textContent  = _live.teamB;
+  document.getElementById('sb-score-a').textContent = _live.scoreA;
+  document.getElementById('sb-score-b').textContent = _live.scoreB;
+  document.getElementById('sb-phase').textContent   = `${_live.phase} · ${_live.cat}`;
+}
+
+function renderLiveColumns() {
+  if (!_live) return;
+  const teamsMap = getTeamsFromSheets();
+  const playersA = (teamsMap[_live.teamA] || []);
+  const playersB = (teamsMap[_live.teamB] || []);
+  const col = document.getElementById('live-columns');
+  col.innerHTML = [
+    { key:'A', name:_live.teamA, players:playersA },
+    { key:'B', name:_live.teamB, players:playersB }
+  ].map(side => `
+    <div class="live-col">
+      <div class="live-col-header">
+        <div class="live-col-title">${side.name}</div>
+      </div>
+      ${side.players.length === 0
+        ? '<div class="empty" style="padding:20px;"><p>Sin jugadores en Sheets</p></div>'
+        : side.players.map(p => `
+          <div class="live-player">
+            <div class="live-pname">${p.name}</div>
+            <div class="live-pstats">
+              <button class="live-stat-btn lbg" title="Gol" onclick="registerStat('${side.key}','${escQ(p.name)}','goal')">G</button>
+              <button class="live-stat-btn lba" title="Asistencia" onclick="registerStat('${side.key}','${escQ(p.name)}','assist')">A</button>
+              <button class="live-stat-btn lbd" title="Defensa" onclick="registerStat('${side.key}','${escQ(p.name)}','defense')">D</button>
+              <button class="live-stat-btn lbc" title="Callahan" onclick="registerStat('${side.key}','${escQ(p.name)}','callahan')">C</button>
+            </div>
+          </div>`).join('')
+      }
+    </div>`).join('');
+}
+
+function escQ(s) { return s.replace(/'/g, "\\'"); }
+
+function registerStat(teamKey, playerName, statType) {
+  if (!_live) return;
+  const event = { teamKey, playerName, statType, ts: Date.now() };
+  _live.events.push(event);
+  if (statType === 'goal' || statType === 'callahan') {
+    if (teamKey === 'A') _live.scoreA++;
+    else _live.scoreB++;
+  }
+  renderLiveScoreboard();
+  renderLiveLog();
+  // Flash feedback
+  toast(`✓ ${playerName} — ${statLabel(statType)}`);
+}
+
+function statLabel(t) {
+  return { goal:'Gol', assist:'Asistencia', defense:'Defensa', callahan:'Callahan' }[t] || t;
+}
+
+function renderLiveLog() {
+  if (!_live) return;
+  const el = document.getElementById('live-log');
+  if (!_live.events.length) { el.innerHTML = '<div class="live-log-item" style="justify-content:center;">Sin eventos aún</div>'; return; }
+  el.innerHTML = [..._live.events].reverse().map((e,i) => `
+    <div class="live-log-item">
+      <span>${_live.teamA === (e.teamKey==='A'?_live.teamA:_live.teamB) && e.teamKey==='A' ? '🔴' : '⚪'} <strong>${e.playerName}</strong> — ${statLabel(e.statType)}</span>
+      ${i===0 ? `<span class="live-log-undo" onclick="undoLast()">↩</span>` : ''}
+    </div>`).join('');
+}
+
+function undoLast() {
+  if (!_live || !_live.events.length) return toast('⚠ Sin eventos que deshacer');
+  const last = _live.events.pop();
+  if (last.statType === 'goal' || last.statType === 'callahan') {
+    if (last.teamKey === 'A') _live.scoreA = Math.max(0, _live.scoreA - 1);
+    else _live.scoreB = Math.max(0, _live.scoreB - 1);
+  }
+  renderLiveScoreboard();
+  renderLiveLog();
+  toast('↩ Último evento deshecho');
+}
+
+async function closeLiveMatch() {
+  if (!_live) return;
+  if (!confirm(`¿Cerrar partido ${_live.teamA} ${_live.scoreA} — ${_live.scoreB} ${_live.teamB} y guardar estadísticas?`)) return;
+
+  const matchId = _live.matchId;
+  const matchObj = {
+    id: matchId,
+    teamName: _live.teamA, rivalName: _live.teamB,
+    teamScore: _live.scoreA, rivalScore: _live.scoreB,
+    category: _live.cat, phase: _live.phase,
+    date: _live.date, code: matchId,
+    teamId: null, rivalId: null
+  };
+  S.matches.push(matchObj);
+  await saveDoc('matches', matchObj);
+
+  // Aggregate stats per player
+  const statsMap = {};
+  _live.events.forEach(e => {
+    const key = `${e.teamKey}_${e.playerName}`;
+    if (!statsMap[key]) statsMap[key] = { teamKey: e.teamKey, playerName: e.playerName, goals:0, assists:0, defenses:0 };
+    if (e.statType==='goal')     { statsMap[key].goals++; }
+    if (e.statType==='assist')   { statsMap[key].assists++; }
+    if (e.statType==='defense')  { statsMap[key].defenses++; }
+    if (e.statType==='callahan') { statsMap[key].goals++; statsMap[key].assists++; statsMap[key].defenses++; }
+  });
+
+  for (const key of Object.keys(statsMap)) {
+    const sv = statsMap[key];
+    const teamName = sv.teamKey === 'A' ? _live.teamA : _live.teamB;
+
+    // Ensure player exists
+    let player = S.players.find(p => p.name.toLowerCase() === sv.playerName.toLowerCase());
+    if (!player) {
+      // Ensure team exists
+      let team = S.teams.find(t => t.name.toLowerCase() === teamName.toLowerCase());
+      if (!team) {
+        team = { id: 't_' + Date.now() + Math.random(), name: teamName, city:'', color:'#e8000a' };
+        S.teams.push(team);
+        await saveDoc('teams', team);
+      }
+      player = { id: 'p_' + Date.now() + Math.random(), name: sv.playerName, teamId: team.id, number:'' };
+      S.players.push(player);
+      await saveDoc('players', player);
+    }
+
+    if (sv.goals || sv.assists || sv.defenses) {
+      const statObj = { id: 's_' + Date.now() + Math.random(), matchId, playerId: player.id, goals: sv.goals, assists: sv.assists, defenses: sv.defenses };
+      S.stats.push(statObj);
+      await saveDoc('stats', statObj);
+    }
+  }
+
+  toast('✓ Partido guardado en Firebase');
+  _live = null;
+  document.getElementById('live-match-panel').style.display = 'none';
+  document.getElementById('live-setup-panel').style.display = 'block';
+  renderMatches(); renderRankings();
+}
+
+function cancelLiveMatch() {
+  if (!confirm('¿Cancelar partido? Se perderán todos los eventos no guardados.')) return;
+  _live = null;
+  document.getElementById('live-match-panel').style.display = 'none';
+  document.getElementById('live-setup-panel').style.display = 'block';
+}
 
 // ── NAV ─────────────────────────────────────────────────
 function go(name, btn) {
@@ -449,11 +798,6 @@ function toast(m) {
   setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-// ── STATUS ───────────────────────────────────────────────
-function setStatus(m, cls='') {
-  const el = document.getElementById('st');
-  el.textContent = m; el.className = 'status ' + cls;
-}
 
 // ── STATS HELPER ─────────────────────────────────────────
 function getStats(pid) {
@@ -470,8 +814,10 @@ function getStats(pid) {
 function saveTeam() {
   const name = document.getElementById('tn').value.trim();
   if (!name) return toast('⚠ Ingresa un nombre');
-  S.teams.push({ id: Date.now(), name, city: document.getElementById('tc').value.trim(), color: document.getElementById('tco').value });
-  save(); closeModal('om-team'); renderTeams(); toast('✓ Equipo guardado');
+  const team = { id: Date.now(), name, city: document.getElementById('tc').value.trim(), color: document.getElementById('tco').value };
+  S.teams.push(team);
+  saveDoc('teams', team);
+  closeModal('om-team'); renderTeams(); toast('✓ Equipo guardado');
   document.getElementById('tn').value = '';
 }
 function renderTeams() {
@@ -489,15 +835,19 @@ function renderTeams() {
 }
 function delTeam(id) {
   if (!confirm('¿Eliminar equipo?')) return;
-  S.teams = S.teams.filter(t => t.id!==id); save(); renderTeams(); toast('Equipo eliminado');
+  S.teams = S.teams.filter(t => t.id!==id);
+  deleteFireDoc('teams', id);
+  renderTeams(); toast('Equipo eliminado');
 }
 
 // ── PLAYERS ──────────────────────────────────────────────
 function savePlayer() {
   const name = document.getElementById('pn').value.trim();
   if (!name) return toast('⚠ Ingresa un nombre');
-  S.players.push({ id: Date.now(), name, teamId: parseInt(document.getElementById('pt').value)||null, number: document.getElementById('pnum').value||'' });
-  save(); closeModal('om-player'); renderPlayers(); toast('✓ Jugador guardado');
+  const player = { id: Date.now(), name, teamId: parseInt(document.getElementById('pt').value)||null, number: document.getElementById('pnum').value||'' };
+  S.players.push(player);
+  saveDoc('players', player);
+  closeModal('om-player'); renderPlayers(); toast('✓ Jugador guardado');
   document.getElementById('pn').value = '';
 }
 function renderPlayers() {
@@ -518,7 +868,9 @@ function renderPlayers() {
   }).join('');
 }
 function delPlayer(id) {
-  S.players = S.players.filter(p => p.id!==id); save(); renderPlayers(); toast('Jugador eliminado');
+  S.players = S.players.filter(p => p.id!==id);
+  deleteFireDoc('players', id);
+  renderPlayers(); toast('Jugador eliminado');
 }
 
 // ── RANKINGS ─────────────────────────────────────────────
@@ -651,240 +1003,17 @@ function renderMatches() {
   }).join('');
 }
 
-// ── SCAN ─────────────────────────────────────────────────
-let b64 = null;
+// ── INIT ─────────────────────────────────────────────────
+// Firebase init happens async via 'firebase-ready' event above.
+// Fallback render in case Firebase is slow:
+renderTeams();
 
-document.getElementById('fi').addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
-const dz = document.getElementById('dz');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('over');
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('image/')) loadFile(f);
-});
-
-function loadFile(file) {
-  const r = new FileReader();
-  r.onload = e => {
-    const src = e.target.result;
-    const img = document.getElementById('preview-img');
-    img.src = src; img.style.display = 'block';
-    b64 = src.split(',')[1];
-    document.getElementById('scan-btn').disabled = false;
-    setStatus('✓ Imagen lista — presiona Analizar con IA', 'ok');
-  };
-  r.readAsDataURL(file);
-}
-
-async function scanImage() {
-  if (!b64) return;
-  const btn = document.getElementById('scan-btn');
-  btn.disabled = true; btn.textContent = '⏳ Analizando...';
-  document.getElementById('lb').classList.add('on');
-  setStatus('Enviando imagen a la IA…');
-
-  const src = document.getElementById('preview-img').src;
-  let mt = 'image/jpeg';
-  if (src.startsWith('data:image/png')) mt = 'image/png';
-  else if (src.startsWith('data:image/webp')) mt = 'image/webp';
-
-  const prompt = `Eres un lector experto de planillas físicas de Ultimate Frisbee del torneo Bogotá Open.
-
-La planilla tiene esta estructura EXACTA:
-- Encabezado: campos "Equipo" (nombre del equipo que usa esta planilla), "Adversario" (el rival), "Categoria", "Marcador Final"
-- Fila de numeros: del 1 al 29, cada columna representa un punto del partido
-- Filas de jugadores: cada fila tiene numero + nombre completo en las primeras columnas
-- Las celdas de la grilla contienen UNA SOLA LETRA por celda:
-  G = Gol (suma 1 gol)
-  A = Asistencia (suma 1 asistencia)
-  D = Defensa (suma 1 defensa)
-  X = Gol + Defensa en ese punto (suma 1 gol Y 1 defensa)
-  Z = Asistencia + Defensa en ese punto (suma 1 asistencia Y 1 defensa)
-  C = Callahan: intercepta y anota (suma 1 gol + 1 asistencia + 1 defensa)
-  (vacio) = no participo
-
-Tu tarea:
-1. Lee el nombre del equipo dueno de la planilla
-2. Lee el nombre del adversario
-3. Lee el marcador final (dos numeros)
-4. Lee la categoria si aparece
-5. Para CADA jugador recorre todas las celdas de su fila y acumula:
-   - goals: cuenta G + X + C
-   - assists: cuenta A + Z + C
-   - defenses: cuenta D + X + Z + C
-
-Responde UNICAMENTE con JSON valido sin texto extra ni backticks:
-{
-  "team": "nombre del equipo",
-  "rival": "nombre del adversario",
-  "teamScore": numero,
-  "rivalScore": numero,
-  "category": "categoria o null",
-  "date": null,
-  "players": [
-    { "name": "nombre completo", "goals": numero, "assists": numero, "defenses": numero }
-  ]
-}
-
-Recuerda: X suma 1G y 1D. Z suma 1A y 1D. C suma 1G, 1A y 1D. Celdas vacias o ilegibles = 0.`;
-
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: [
-          { type: "image", source: { type: "base64", media_type: mt, data: b64 } },
-          { type: "text", text: prompt }
-        ]}]
-      })
-    });
-
-    const data = await res.json();
-    const txt = data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
-    const parsed = JSON.parse(txt.replace(/```json|```/g,'').trim());
-
-    // Fill fields
-    if (parsed.team)       document.getElementById('s-team').value = parsed.team;
-    if (parsed.rival)      document.getElementById('s-rival').value = parsed.rival;
-    if (parsed.teamScore != null) document.getElementById('s-score').value = parsed.teamScore;
-    if (parsed.rivalScore != null) document.getElementById('s-rscore').value = parsed.rivalScore;
-    if (parsed.category)   document.getElementById('s-cat').value = parsed.category;
-    if (parsed.date)       document.getElementById('s-date').value = parsed.date;
-
-    window._sc = parsed;
-    if (parsed.players && parsed.players.length) {
-      document.getElementById('sp-section').style.display = 'block';
-      document.getElementById('sp-list').innerHTML = parsed.players.map((p,i) =>
-        `<div class="p-row">
-          <div class="p-name">${p.name}</div>
-          <input type="number" min="0" value="${p.goals||0}" id="sc-g-${i}" style="text-align:center;padding:6px;">
-          <input type="number" min="0" value="${p.assists||0}" id="sc-a-${i}" style="text-align:center;padding:6px;">
-          <input type="number" min="0" value="${p.defenses||0}" id="sc-d-${i}" style="text-align:center;padding:6px;">
-        </div>`
-      ).join('');
-    }
-    setStatus(`✓ ${parsed.players?.length||0} jugadores detectados. Revisa y corrige si es necesario.`, 'ok');
-  } catch(err) {
-    setStatus('✗ Error al analizar. Verifica la imagen e intenta de nuevo.', 'err');
-    console.error(err);
-  } finally {
-    document.getElementById('lb').classList.remove('on');
-    btn.disabled = false; btn.textContent = '🔍 Analizar con IA';
-  }
-}
-
-function saveMatch() {
-  const teamName  = document.getElementById('s-team').value.trim();
-  const rivalName = document.getElementById('s-rival').value.trim();
-  const code      = document.getElementById('s-code').value.trim();
-  if (!teamName)  return toast('⚠ Falta el nombre del equipo');
-  if (!rivalName) return toast('⚠ Falta el nombre del adversario');
-  if (!code)      return toast('⚠ Falta el código de planilla');
-
-  // Duplicate check: mismo código Y mismo equipo = duplicado real
-  const existing = S.matches.find(m =>
-    m.code === code &&
-    (m.teamName?.toLowerCase() === teamName.toLowerCase() || m.rivalName?.toLowerCase() === teamName.toLowerCase())
-  );
-  if (existing) {
-    const tn = S.teams.find(t=>t.id===existing.teamId)?.name || existing.teamName || 'Equipo';
-    const rn = S.teams.find(t=>t.id===existing.rivalId)?.name || existing.rivalName || 'Rival';
-    showDuplicateAlert(code, tn, rn, existing.date);
-    return;
-  }
-
-  const teamScore  = parseInt(document.getElementById('s-score').value)||0;
-  const rivalScore = parseInt(document.getElementById('s-rscore').value)||0;
-  const category   = document.getElementById('s-cat').value.trim();
-  const date       = document.getElementById('s-date').value;
-
-  // Auto-create teams
-  let team  = S.teams.find(t => t.name.toLowerCase()===teamName.toLowerCase());
-  if (!team)  { team  = {id:Date.now(),   name:teamName,  city:'',color:'#e8000a'}; S.teams.push(team); }
-  let rival = S.teams.find(t => t.name.toLowerCase()===rivalName.toLowerCase());
-  if (!rival) { rival = {id:Date.now()+1, name:rivalName, city:'',color:'#888888'}; S.teams.push(rival); }
-
-  const matchId = Date.now()+2;
-  S.matches.push({ id:matchId, code, teamId:team.id, rivalId:rival.id, teamName, rivalName, teamScore, rivalScore, category, date });
-
-  // Save player stats
-  const sc = window._sc;
-  if (sc && sc.players) {
-    sc.players.forEach((sp, i) => {
-      const nm = sp.name.trim().toLowerCase();
-      let player = S.players.find(p => p.name.trim().toLowerCase()===nm);
-      if (!player) {
-        player = { id:Date.now()+10+i, name:sp.name.trim(), teamId:team.id, number:'' };
-        S.players.push(player);
-      }
-      const goals    = parseInt(document.getElementById(`sc-g-${i}`)?.value)||0;
-      const assists  = parseInt(document.getElementById(`sc-a-${i}`)?.value)||0;
-      const defenses = parseInt(document.getElementById(`sc-d-${i}`)?.value)||0;
-      if (goals||assists||defenses) {
-        S.stats.push({ matchId, playerId:player.id, goals, assists, defenses });
-      }
-    });
-  }
-
-  save();
-  toast('✓ Partido guardado exitosamente');
-  window._sc = null;
-  ['s-team','s-rival','s-score','s-rscore','s-cat','s-date','s-code'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('code-status').textContent='';
-  document.getElementById('sp-section').style.display='none';
-  document.getElementById('sp-list').innerHTML='';
-  setStatus('');
-}
-
-// ── CODE CHECK ───────────────────────────────────────────
-function checkCode() {
-  const code = document.getElementById('s-code').value.trim();
-  const teamName = document.getElementById('s-team').value.trim().toLowerCase();
-  const el = document.getElementById('code-status');
-  if (!code) { el.textContent=''; return; }
-
-  // Find all matches with this code
-  const withCode = S.matches.filter(m => m.code === code);
-  if (!withCode.length) {
-    el.innerHTML = '<span style="color:#ff6670">✓ Código disponible</span>';
-    return;
-  }
-
-  // Check if current team already has this code
-  const duplicate = withCode.find(m =>
-    teamName && (
-      m.teamName?.toLowerCase() === teamName ||
-      m.rivalName?.toLowerCase() === teamName
-    )
-  );
-
-  if (duplicate) {
-    const tn = duplicate.teamName || '?';
-    const rn = duplicate.rivalName || '?';
-    el.innerHTML = `<span style="color:#ff3340">⚠ Tu equipo ya tiene este código: ${tn} vs ${rn}</span>`;
-  } else {
-    // Code exists but for a different team — that's fine
-    const teams = withCode.map(m => m.teamName).join(', ');
-    el.innerHTML = `<span style="color:#ff6670">✓ Disponible — ya usado por: ${teams}</span>`;
-  }
-}
-
-function showDuplicateAlert(code, tn, rn, date) {
-  document.getElementById('dup-code').textContent = code;
-  document.getElementById('dup-info').textContent = `${tn} vs ${rn}${date?' · '+date:''}`;
-  document.getElementById('om-duplicate').classList.add('open');
-}
-
-// ── DELETE MATCH ──────────────────────────────────────────
 function deleteMatch(id) {
   if (!confirm('¿Eliminar este partido y todas sus estadísticas?')) return;
-  S.stats = S.stats.filter(s => s.matchId !== id);
+  S.stats   = S.stats.filter(s => s.matchId !== id);
   S.matches = S.matches.filter(m => m.id !== id);
-  save(); renderMatches(); toast('✓ Partido eliminado');
+  deleteFireDoc('matches', id);
+  renderMatches(); toast('✓ Partido eliminado');
 }
 
 // ── EDIT MATCH ────────────────────────────────────────────
@@ -932,6 +1061,7 @@ function saveEdit() {
   if (newRn) m.rivalName = newRn;
 
   save(); closeModal('om-edit'); renderMatches(); toast('✓ Partido actualizado');
+  saveDoc('matches', m);
 }
 
 // ── EXPORT ───────────────────────────────────────────────
@@ -948,8 +1078,7 @@ function exportCSV() {
   toast('✓ CSV exportado');
 }
 
-// Init
-renderTeams();
+
 </script>
 </body>
 </html>
