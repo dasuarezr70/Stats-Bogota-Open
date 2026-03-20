@@ -27,16 +27,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0000; --surface: #1a0000; --surface2: #260000;
-    --accent: #e8000a; --accent2: #ff4d55; --accent3: #ffffff; --accent4: #cccccc;
-    --text: #f5f0f0; --muted: #8a6b6b; --border: #3a0000;
+    --bg: #f5f5f5; --surface: #ffffff; --surface2: #f0f0f0;
+    --accent: #e8000a; --accent2: #cc0008; --accent3: #1a1a1a; --accent4: #444444;
+    --text: #1a1a1a; --muted: #666666; --border: #dcdcdc;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
   body::before {
     content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: radial-gradient(circle at 20% 50%, rgba(232,0,10,0.08) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, rgba(180,0,0,0.05) 0%, transparent 40%);
+    background-image: radial-gradient(circle at 20% 50%, rgba(232,0,10,0.04) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(232,0,10,0.03) 0%, transparent 40%);
   }
   header { position: relative; padding: 26px 40px 18px; border-bottom: 1px solid var(--border); border-top: 4px solid #e8000a; display: flex; align-items: center; gap: 16px; z-index: 1; }
   .disc { width: 40px; height: 40px; border: 3px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: spin 8s linear infinite; flex-shrink: 0; }
@@ -86,12 +86,12 @@
 
   /* PILLS */
   .pill { display: inline-flex; align-items: center; justify-content: center; padding: 3px 10px; border-radius: 20px; font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700; min-width: 32px; }
-  .pg { background: rgba(232,0,10,0.18); color: #ff3340; }
-  .pa { background: rgba(255,255,255,0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.25); }
-  .pd { background: rgba(200,200,200,0.12); color: #cccccc; }
-  .px { background: rgba(232,0,10,0.14); color: #ff6670; border: 1px solid rgba(232,0,10,0.3); }
-  .pz { background: rgba(255,255,255,0.08); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.18); }
-  .pc { background: rgba(232,0,10,0.25); color: #ffffff; border: 1px solid #e8000a; font-weight: 900; }
+  .pg { background: rgba(232,0,10,0.12); color: #cc0008; }
+  .pa { background: rgba(30,30,30,0.08); color: #1a1a1a; border: 1px solid rgba(30,30,30,0.2); }
+  .pd { background: rgba(100,100,100,0.1); color: #444444; }
+  .px { background: rgba(232,0,10,0.1); color: #cc0008; border: 1px solid rgba(232,0,10,0.25); }
+  .pz { background: rgba(30,30,30,0.06); color: #333333; border: 1px solid rgba(30,30,30,0.15); }
+  .pc { background: rgba(232,0,10,0.15); color: #cc0008; border: 1px solid #e8000a; font-weight: 900; }
 
   /* FORMS */
   .fg { display: grid; gap: 11px; margin-bottom: 12px; }
@@ -120,7 +120,7 @@
   /* TABLE */
   .tbl { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
   .tbl th { text-align: left; padding: 9px 11px; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
-  .tbl td { padding: 10px 11px; border-bottom: 1px solid rgba(80,0,0,0.4); vertical-align: middle; }
+  .tbl td { padding: 10px 11px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   .tbl tr:last-child td { border-bottom: none; }
   .tbl tr:hover td { background: rgba(232,0,10,0.03); }
 
@@ -137,31 +137,31 @@
   .mt { text-align: center; }
   .mt .mn { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 2px; }
   .ms { display: flex; align-items: center; gap: 8px; }
-  .sn { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; line-height: 1; color: #ff3340; }
+  .sn { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; line-height: 1; color: #cc0008; }
   .ss { font-family: 'Space Mono', monospace; color: var(--muted); font-size: 1rem; }
-  .wt { font-size: 0.67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #ff3340; margin-top: 2px; }
+  .wt { font-size: 0.67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #cc0008; margin-top: 2px; }
   .mmeta { grid-column: 1/-1; text-align: center; font-size: 0.74rem; color: var(--muted); font-family: 'Space Mono', monospace; }
 
   /* RANKINGS */
   .rk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .rkcard { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
   .rkcard.rkg { border-top: 3px solid #e8000a; }
-  .rkcard.rka { border-top: 3px solid #ffffff; }
+  .rkcard.rka { border-top: 3px solid #1a1a1a; }
   .rkcard.rkd { border-top: 3px solid #888888; }
   .rkh { padding: 14px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
   .rkh h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 2px; }
-  .rkg .rkh h3 { color: #ff3340; }
-  .rka .rkh h3 { color: #ffffff; }
-  .rkd .rkh h3 { color: #aaaaaa; }
-  .rkrow { display: grid; grid-template-columns: 26px 1fr 42px; align-items: center; gap: 8px; padding: 10px 18px; border-bottom: 1px solid rgba(30,51,40,0.35); transition: background 0.15s; }
+  .rkg .rkh h3 { color: #cc0008; }
+  .rka .rkh h3 { color: #1a1a1a; }
+  .rkd .rkh h3 { color: #555555; }
+  .rkrow { display: grid; grid-template-columns: 26px 1fr 42px; align-items: center; gap: 8px; padding: 10px 18px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
   .rkrow:last-child { border-bottom: none; }
-  .rkrow:hover { background: rgba(255,255,255,0.02); }
+  .rkrow:hover { background: rgba(232,0,10,0.03); }
   .rkpos { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--muted); text-align: center; }
-  .rkpos.p1 { color: #ffd700; font-weight: 700; } .rkpos.p2 { color: #c0c0c0; font-weight: 700; } .rkpos.p3 { color: #cd7f32; font-weight: 700; }
+  .rkpos.p1 { color: #d4a000; font-weight: 700; } .rkpos.p2 { color: #888888; font-weight: 700; } .rkpos.p3 { color: #a0522d; font-weight: 700; }
   .rkpname { font-size: 0.84rem; font-weight: 500; }
   .rkteam { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
   .rkval { font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; text-align: right; }
-  .rkg .rkval { color: #ff3340; } .rka .rkval { color: #ffffff; } .rkd .rkval { color: #aaaaaa; }
+  .rkg .rkval { color: #cc0008; } .rka .rkval { color: #1a1a1a; } .rkd .rkval { color: #555555; }
 
   /* SUMMARY */
   .sumgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-bottom: 28px; }
@@ -177,7 +177,7 @@
   .modal h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 3px; color: #ff3340; margin-bottom: 20px; }
   .macts { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 
-  .toast { position: fixed; bottom: 26px; right: 26px; background: var(--surface2); border: 1px solid #e8000a; border-radius: 10px; padding: 11px 16px; z-index: 200; transform: translateY(80px); opacity: 0; transition: all 0.3s; font-family: 'Space Mono', monospace; font-size: 0.76rem; color: #ff6670; }
+  .toast { position: fixed; bottom: 26px; right: 26px; background: #1a1a1a; border: 1px solid #e8000a; border-radius: 10px; padding: 11px 16px; z-index: 200; transform: translateY(80px); opacity: 0; transition: all 0.3s; font-family: 'Space Mono', monospace; font-size: 0.76rem; color: #ffffff; }
   .toast.show { transform: translateY(0); opacity: 1; }
   .empty { text-align: center; padding: 40px; color: var(--muted); }
   .empty .ei { font-size: 2.6rem; margin-bottom: 8px; }
@@ -205,7 +205,7 @@
   .live-team-a     { text-align:left; }
   .live-team-b     { text-align:right; }
   .live-score-box  { display:flex; align-items:center; gap:10px; justify-content:center; }
-  .live-score      { font-family:'Bebas Neue',sans-serif; font-size:3.5rem; line-height:1; color:#ff3340; min-width:48px; text-align:center; }
+  .live-score      { font-family:'Bebas Neue',sans-serif; font-size:3.5rem; line-height:1; color:#cc0008; min-width:48px; text-align:center; }
   .live-sep        { font-family:'Space Mono',monospace; color:var(--muted); font-size:1.4rem; }
   .live-phase      { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; text-align:center; margin-top:4px; }
 
@@ -215,17 +215,17 @@
   .live-col-title  { font-family:'Bebas Neue',sans-serif; font-size:1.05rem; letter-spacing:2px; }
   .live-col-badge  { font-family:'Space Mono',monospace; font-size:0.65rem; padding:2px 8px; border-radius:10px; }
 
-  .live-player     { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid rgba(80,0,0,0.4); transition:background 0.15s; }
+  .live-player { display:flex; flex-direction:column; gap:7px; padding:12px 16px; border-bottom:1px solid var(--border); transition:background 0.15s; }
   .live-player:last-child { border-bottom:none; }
-  .live-player:hover { background:rgba(232,0,10,0.04); }
-  .live-pname      { font-size:0.875rem; font-weight:500; }
-  .live-pstats     { display:flex; gap:6px; align-items:center; }
-  .live-stat-btn   { width:28px; height:28px; border-radius:6px; border:none; cursor:pointer; font-family:'Space Mono',monospace; font-size:0.72rem; font-weight:700; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
-  .live-stat-btn:hover { transform:scale(1.12); }
-  .lbg { background:rgba(232,0,10,0.18); color:#ff3340; }
-  .lba { background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.2); }
-  .lbd { background:rgba(200,200,200,0.12); color:#ccc; }
-  .lbc { background:rgba(232,0,10,0.28); color:#fff; border:1px solid #e8000a; }
+  .live-player:hover { background:rgba(232,0,10,0.03); }
+  .live-pname      { font-size:0.875rem; font-weight:600; color:var(--text); }
+  .live-pstats     { display:flex; gap:8px; align-items:center; }
+  .live-stat-btn   { flex:1; padding:7px 4px; border-radius:6px; border:none; cursor:pointer; font-family:'Space Mono',monospace; font-size:0.75rem; font-weight:700; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+  .live-stat-btn:hover { transform:scale(1.06); }
+  .lbg { background: rgba(232,0,10,0.12); color: #cc0008; border: 1px solid rgba(232,0,10,0.3); }
+  .lba { background: rgba(30,30,30,0.08); color: #1a1a1a; border: 1px solid rgba(30,30,30,0.2); }
+  .lbd { background: rgba(100,100,100,0.1); color: #444444; border: 1px solid rgba(100,100,100,0.25); }
+  .lbc { background: rgba(232,0,10,0.15); color: #cc0008; border: 1px solid #e8000a; }
 
   .live-setup      { max-width:520px; margin:0 auto; }
   .live-setup .panel { margin-bottom:16px; }
@@ -249,14 +249,25 @@
   </div>
 </header>
 
-<nav>
-  <button class="active" onclick="go('live',this)">⚡ En Vivo</button>
-  <button onclick="go('rankings',this)">🏆 Rankings</button>
-  <button onclick="go('players',this)">👤 Jugadores</button>
-  <button onclick="go('teams',this)">🏟 Equipos</button>
-  <button onclick="go('matches',this)">⚡ Partidos</button>
-  <button onclick="exportCSV()">⬇ Exportar CSV</button>
+<nav id="main-nav">
+  <!-- Nav buttons injected by role system -->
 </nav>
+
+<!-- ROLE LOGIN MODAL -->
+<div class="overlay" id="om-login">
+  <div class="modal" style="max-width:380px;">
+    <h2 id="login-title">🔒 ACCESO</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px;" id="login-desc">Ingresa la contraseña para continuar.</p>
+    <div class="fg">
+      <div><label>Contraseña</label><input id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitLogin()"></div>
+    </div>
+    <div id="login-error" style="color:#cc0008;font-size:0.82rem;margin-top:8px;display:none;">⚠ Contraseña incorrecta</div>
+    <div class="macts">
+      <button class="btn bs" onclick="closeModal('om-login')">Cancelar</button>
+      <button class="btn bp" onclick="submitLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
 
 <main>
 
@@ -293,15 +304,11 @@
               <select id="live-phase">
                 <option value="">— Seleccionar —</option>
                 <option value="Grupos">Grupos</option>
-                <option value="Cuartos">Cuartos de Final</option>
+                <option value="Rankeo">Rankeo</option>
                 <option value="Semi">Semifinal</option>
                 <option value="Final">Final</option>
               </select>
             </div>
-          </div>
-          <div>
-            <label>Fecha</label>
-            <input id="live-date" type="date">
           </div>
         </div>
         <div id="live-setup-status" class="status" style="margin-top:8px;"></div>
@@ -490,6 +497,91 @@
 let S = { teams:[], players:[], matches:[], stats:[] };
 let _db = null, _fs = null, _fbReady = false;
 
+// ── ROLES ─────────────────────────────────────────────────
+const ROLES = { public: 0, planilla: 1, admin: 2 };
+const PASS  = { planilla: 'planilla2025', admin: 'admin2025' };
+let _role = ROLES.public;
+let _pendingRole = null;
+
+const NAV_BY_ROLE = {
+  0: [ // Público
+    { label:'🏆 Rankings',  section:'rankings' },
+    { label:'⚡ Partidos',  section:'matches'  },
+    { label:'🔒 Planilla',  action:'loginPlanilla' },
+  ],
+  1: [ // Planilla
+    { label:'⚡ En Vivo',   section:'live'     },
+    { label:'🏆 Rankings',  section:'rankings' },
+    { label:'⚡ Partidos',  section:'matches'  },
+    { label:'🔒 Admin',     action:'loginAdmin'},
+    { label:'🚪 Salir',     action:'logout'    },
+  ],
+  2: [ // Admin
+    { label:'⚡ En Vivo',   section:'live'     },
+    { label:'🏆 Rankings',  section:'rankings' },
+    { label:'👤 Jugadores', section:'players'  },
+    { label:'🏟 Equipos',   section:'teams'    },
+    { label:'⚡ Partidos',  section:'matches'  },
+    { label:'⬇ Exportar',  action:'exportCSV' },
+    { label:'🚪 Salir',     action:'logout'    },
+  ]
+};
+
+function renderNav(activeSection) {
+  const nav = document.getElementById('main-nav');
+  const items = NAV_BY_ROLE[_role];
+  nav.innerHTML = items.map(item => {
+    const isActive = item.section && item.section === (activeSection || currentSection());
+    if (item.section) {
+      return `<button ${isActive?'class="active"':''} onclick="go('${item.section}',this)">${item.label}</button>`;
+    } else {
+      return `<button onclick="${item.action}()">${item.label}</button>`;
+    }
+  }).join('');
+}
+
+function currentSection() {
+  const active = document.querySelector('.section.active');
+  return active ? active.id.replace('section-','') : 'rankings';
+}
+
+function loginPlanilla() { _pendingRole = ROLES.planilla; openLoginModal('ACCESO PLANILLA','Contraseña de anotador'); }
+function loginAdmin()    { _pendingRole = ROLES.admin;    openLoginModal('ACCESO ADMIN','Contraseña de administrador'); }
+
+function openLoginModal(title, desc) {
+  document.getElementById('login-title').textContent = title;
+  document.getElementById('login-desc').textContent  = desc;
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('om-login').classList.add('open');
+  setTimeout(() => document.getElementById('login-pass').focus(), 200);
+}
+
+function submitLogin() {
+  const pass = document.getElementById('login-pass').value;
+  const roleKey = _pendingRole === ROLES.planilla ? 'planilla' : 'admin';
+  if (pass === PASS[roleKey]) {
+    _role = _pendingRole;
+    closeModal('om-login');
+    // Navigate to first section of new role
+    const first = NAV_BY_ROLE[_role].find(i => i.section);
+    if (first) go(first.section, null);
+    else renderNav();
+    toast(`✓ Acceso ${roleKey} concedido`);
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function logout() {
+  _role = ROLES.public;
+  go('rankings', null);
+  toast('✓ Sesión cerrada');
+}
+
+
 // Sheets public CSV URL
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTNSNK7eOKov5dywy43dzrNOaEaCSFc6F4yzd7jzeZGWi2SSjzGrfW9Ae9zS9rOJa9BYah6Oi7-UvTE/pub?output=csv';
 
@@ -497,6 +589,10 @@ const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTNSNK7eOKov
 window.addEventListener('firebase-ready', async () => {
   _db = window._db; _fs = window._fs; _fbReady = true;
   await loadFromFirebase();
+  // Start on rankings for public role
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-rankings').classList.add('active');
+  renderNav('rankings');
   renderTeams(); renderPlayers(); renderRankings(); renderMatches();
   await loadSheetsPlayers();
 });
@@ -584,7 +680,6 @@ function startLiveMatch() {
   const teamB = document.getElementById('live-team-b').value.trim();
   const cat   = document.getElementById('live-cat').value.trim();
   const phase = document.getElementById('live-phase').value.trim();
-  const date  = document.getElementById('live-date').value;
   const statusEl = document.getElementById('live-setup-status');
 
   if (!teamA) return showLiveStatus('⚠ Selecciona el Equipo A', 'err');
@@ -603,7 +698,7 @@ function startLiveMatch() {
   if (dup) return showLiveStatus(`⚠ Ya existe un partido ${teamA} vs ${teamB} en ${phase}`, 'err');
 
   const matchId = 'live_' + Date.now();
-  _live = { matchId, teamA, teamB, scoreA:0, scoreB:0, phase, cat, date, events:[] };
+  _live = { matchId, teamA, teamB, scoreA:0, scoreB:0, phase, cat, events:[] };
 
   document.getElementById('live-setup-panel').style.display = 'none';
   document.getElementById('live-match-panel').style.display = 'block';
@@ -709,7 +804,7 @@ async function closeLiveMatch() {
     teamName: _live.teamA, rivalName: _live.teamB,
     teamScore: _live.scoreA, rivalScore: _live.scoreB,
     category: _live.cat, phase: _live.phase,
-    date: _live.date, code: matchId,
+    date: new Date().toISOString().split('T')[0], code: matchId,
     teamId: null, rivalId: null
   };
   S.matches.push(matchObj);
@@ -768,14 +863,16 @@ function cancelLiveMatch() {
 
 // ── NAV ─────────────────────────────────────────────────
 function go(name, btn) {
+  // Guard: check role has access
+  const allowed = NAV_BY_ROLE[_role].some(i => i.section === name);
+  if (!allowed) { toast('⚠ Sin acceso a esta sección'); return; }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('section-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
+  renderNav(name);
   if (name === 'players') renderPlayers();
-  if (name === 'teams') renderTeams();
+  if (name === 'teams')   renderTeams();
   if (name === 'rankings') renderRankings();
-  if (name === 'matches') renderMatches();
+  if (name === 'matches')  renderMatches();
 }
 
 // ── MODAL ────────────────────────────────────────────────
@@ -834,9 +931,11 @@ function renderTeams() {
   }).join('');
 }
 function delTeam(id) {
-  if (!confirm('¿Eliminar equipo?')) return;
-  S.teams = S.teams.filter(t => t.id!==id);
-  deleteFireDoc('teams', id);
+  const sid = String(id);
+  const hasMatches = S.matches.some(m => String(m.teamId) === sid || String(m.rivalId) === sid || m.teamName === S.teams.find(t=>String(t.id)===sid)?.name || m.rivalName === S.teams.find(t=>String(t.id)===sid)?.name);
+  if (hasMatches) return toast('⚠ No se puede eliminar: el equipo tiene partidos registrados');
+  S.teams = S.teams.filter(t => String(t.id) !== sid);
+  deleteFireDoc('teams', sid);
   renderTeams(); toast('Equipo eliminado');
 }
 
@@ -868,8 +967,11 @@ function renderPlayers() {
   }).join('');
 }
 function delPlayer(id) {
-  S.players = S.players.filter(p => p.id!==id);
-  deleteFireDoc('players', id);
+  const sid = String(id);
+  const hasStats = S.stats.some(s => String(s.playerId) === sid);
+  if (hasStats) return toast('⚠ No se puede eliminar: tiene estadísticas registradas');
+  S.players = S.players.filter(p => String(p.id) !== sid);
+  deleteFireDoc('players', sid);
   renderPlayers(); toast('Jugador eliminado');
 }
 
@@ -1004,63 +1106,65 @@ function renderMatches() {
 }
 
 // ── INIT ─────────────────────────────────────────────────
-// Firebase init happens async via 'firebase-ready' event above.
-// Fallback render in case Firebase is slow:
+// Show rankings by default for public role
+document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+document.getElementById('section-rankings').classList.add('active');
+renderNav('rankings');
 renderTeams();
 
 function deleteMatch(id) {
   if (!confirm('¿Eliminar este partido y todas sus estadísticas?')) return;
-  S.stats   = S.stats.filter(s => s.matchId !== id);
-  S.matches = S.matches.filter(m => m.id !== id);
-  deleteFireDoc('matches', id);
+  const sid = String(id);
+  // Delete stats from Firebase
+  S.stats.filter(s => String(s.matchId) === sid).forEach(s => deleteFireDoc('stats', s.id));
+  S.stats   = S.stats.filter(s => String(s.matchId) !== sid);
+  S.matches = S.matches.filter(m => String(m.id) !== sid);
+  deleteFireDoc('matches', sid);
   renderMatches(); toast('✓ Partido eliminado');
 }
 
 // ── EDIT MATCH ────────────────────────────────────────────
 function editMatch(id) {
-  const m = S.matches.find(x => x.id===id);
+  const sid = String(id);
+  const m = S.matches.find(x => String(x.id) === sid);
   if (!m) return;
-  const tn = S.teams.find(t=>t.id===m.teamId)?.name || m.teamName || '';
-  const rn = S.teams.find(t=>t.id===m.rivalId)?.name || m.rivalName || '';
-  document.getElementById('ed-id').value = id;
-  document.getElementById('ed-code').value = m.code || '';
-  document.getElementById('ed-team').value = tn;
+  const tn = S.teams.find(t => String(t.id) === String(m.teamId))?.name || m.teamName || '';
+  const rn = S.teams.find(t => String(t.id) === String(m.rivalId))?.name || m.rivalName || '';
+  document.getElementById('ed-id').value    = sid;
+  document.getElementById('ed-code').value  = m.code || '';
+  document.getElementById('ed-team').value  = tn;
   document.getElementById('ed-rival').value = rn;
-  document.getElementById('ed-score').value = m.teamScore || 0;
+  document.getElementById('ed-score').value  = m.teamScore || 0;
   document.getElementById('ed-rscore').value = m.rivalScore || 0;
-  document.getElementById('ed-date').value = m.date || '';
+  document.getElementById('ed-date').value  = m.date || '';
   const edCat = document.getElementById('ed-cat'); edCat.value = m.category || '';
   document.getElementById('om-edit').classList.add('open');
 }
 
 function saveEdit() {
-  const id = parseInt(document.getElementById('ed-id').value);
+  const sid  = document.getElementById('ed-id').value;
   const code = document.getElementById('ed-code').value.trim();
-  const m = S.matches.find(x => x.id===id);
+  const m = S.matches.find(x => String(x.id) === sid);
   if (!m) return;
 
-  // Check code conflict: mismo código + mismo equipo en OTRO partido
   const newTeamName = document.getElementById('ed-team').value.trim().toLowerCase();
   const conflict = S.matches.find(x =>
-    x.code===code && x.id!==id &&
-    (x.teamName?.toLowerCase()===newTeamName || x.rivalName?.toLowerCase()===newTeamName)
+    x.code === code && String(x.id) !== sid &&
+    (x.teamName?.toLowerCase() === newTeamName || x.rivalName?.toLowerCase() === newTeamName)
   );
-  if (conflict) {
-    return toast(`⚠ Este equipo ya tiene una planilla con código ${code}`);
-  }
+  if (conflict) return toast(`⚠ Este equipo ya tiene una planilla con código ${code}`);
 
-  m.code      = code;
-  m.teamScore  = parseInt(document.getElementById('ed-score').value)||0;
-  m.rivalScore = parseInt(document.getElementById('ed-rscore').value)||0;
+  m.code       = code;
+  m.teamScore  = parseInt(document.getElementById('ed-score').value)  || 0;
+  m.rivalScore = parseInt(document.getElementById('ed-rscore').value) || 0;
   m.date       = document.getElementById('ed-date').value;
   m.category   = document.getElementById('ed-cat').value.trim();
-  // Update names too
-  const newTn = document.getElementById('ed-team').value.trim();
-  const newRn = document.getElementById('ed-rival').value.trim();
-  if (newTn) m.teamName = newTn;
+  const newTn  = document.getElementById('ed-team').value.trim();
+  const newRn  = document.getElementById('ed-rival').value.trim();
+  if (newTn) m.teamName  = newTn;
   if (newRn) m.rivalName = newRn;
 
-  save(); closeModal('om-edit'); renderMatches(); toast('✓ Partido actualizado');
+  closeModal('om-edit'); renderMatches(); toast('✓ Partido actualizado');
   saveDoc('matches', m);
 }
 
