@@ -237,6 +237,82 @@
 
   .loading-spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
 
+  /* SPIRIT */
+  .spirit-criterion { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; transition:border-color 0.2s; }
+  .spirit-criterion.filled { border-color:rgba(232,0,10,0.4); }
+  .spirit-crit-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .spirit-crit-left { display:flex; align-items:center; gap:10px; }
+  .spirit-crit-icon { font-size:20px; }
+  .spirit-crit-name { font-size:0.875rem; font-weight:600; color:var(--text); }
+  .spirit-score-badge { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; font-weight:700; color:var(--muted); min-width:30px; text-align:right; line-height:1; }
+  .spirit-score-row { display:flex; gap:6px; }
+  .spirit-score-btn { flex:1; height:40px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--muted); font-family:'Space Mono',monospace; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.15s; }
+  .spirit-score-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .spirit-score-btn.s0.active { background:#ef4444; border-color:#ef4444; color:#fff; }
+  .spirit-score-btn.s1.active { background:#f97316; border-color:#f97316; color:#fff; }
+  .spirit-score-btn.s2.active { background:#3b82f6; border-color:#3b82f6; color:#fff; }
+  .spirit-score-btn.s3.active { background:#10b981; border-color:#10b981; color:#fff; }
+  .spirit-score-btn.s4.active { background:#cc0008; border-color:#cc0008; color:#fff; }
+  .spirit-score-labels { display:flex; justify-content:space-between; margin-top:5px; }
+  .spirit-score-labels span { font-size:0.68rem; color:var(--muted); font-family:'Space Mono',monospace; }
+
+  .spirit-rank-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:10px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all 0.2s; }
+  .spirit-rank-item:hover { border-color:rgba(232,0,10,0.3); }
+  .spirit-rank-item.expanded { border-color:var(--accent); }
+  .spirit-rank-pos { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--muted); min-width:28px; line-height:1; }
+  .spirit-rank-pos.p1 { color:#d4a000; }
+  .spirit-rank-pos.p2 { color:#888; }
+  .spirit-rank-pos.p3 { color:#a0522d; }
+  .spirit-rank-info { flex:1; }
+  .spirit-rank-name { font-weight:700; font-size:0.95rem; }
+  .spirit-rank-meta { font-size:0.72rem; color:var(--muted); margin-top:2px; font-family:'Space Mono',monospace; }
+  .spirit-rank-bar { height:3px; background:var(--border); border-radius:2px; margin-top:6px; overflow:hidden; width:100px; }
+  .spirit-rank-bar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--accent),#f97316); transition:width 0.6s; }
+  .spirit-rank-score { text-align:right; }
+  .spirit-rank-num { font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--accent); line-height:1; }
+  .spirit-rank-sub { font-size:0.68rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .spirit-breakdown { display:none; padding:14px 0 4px; border-top:1px solid var(--border); margin-top:12px; }
+  .spirit-rank-item.expanded .spirit-breakdown { display:block; }
+  .spirit-bd-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:12px; }
+  .spirit-bd-cell { background:var(--bg); border-radius:8px; padding:10px 5px; text-align:center; border:1px solid var(--border); }
+  .spirit-bd-icon { font-size:14px; }
+  .spirit-bd-val { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; color:var(--accent); line-height:1; }
+  .spirit-bd-label { font-size:0.65rem; color:var(--muted); margin-top:2px; font-family:'Space Mono',monospace; }
+
+  /* Admin spirit buttons */
+  .btn-spirit-del { background:transparent; border:1px solid #ef444466; border-radius:6px; color:#ef4444; cursor:pointer; padding:3px 7px; font-size:0.75rem; transition:all 0.15s; margin-left:4px; }
+  .btn-spirit-del:hover { background:#ef4444; color:#fff; }
+  .btn-spirit-edit { background:transparent; border:1px solid rgba(232,0,10,0.4); border-radius:6px; color:var(--accent); cursor:pointer; padding:3px 7px; font-size:0.75rem; transition:all 0.15s; }
+  .btn-spirit-edit:hover { background:var(--accent); color:#fff; }
+
+  /* Spirit guide */
+  .spirit-guide-toggle { width:100%; padding:8px 12px; background:rgba(232,0,10,0.05); border:none; border-top:1px solid var(--border); color:var(--accent); font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600; letter-spacing:1px; cursor:pointer; text-align:left; transition:background 0.2s; display:flex; align-items:center; gap:6px; text-transform:uppercase; }
+  .spirit-guide-toggle:hover { background:rgba(232,0,10,0.1); }
+  .spirit-guide-toggle .gt-arr { margin-left:auto; font-size:0.65rem; transition:transform 0.25s; }
+  .spirit-criterion.guide-open .gt-arr { transform:rotate(180deg); }
+  .spirit-guide-panel { display:none; padding:12px; border-top:1px solid var(--border); background:var(--bg); }
+  .spirit-criterion.guide-open .spirit-guide-panel { display:block; }
+  .spirit-guide-table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+  .spirit-guide-table th { font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--muted); padding:5px 8px; border-bottom:1px solid var(--border); text-align:left; }
+  .spirit-guide-table td { padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.5; }
+  .spirit-guide-table tr:last-child td { border-bottom:none; }
+  .spirit-score-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-family:'Space Mono',monospace; font-size:0.75rem; font-weight:700; min-width:28px; text-align:center; }
+  .sp0 { background:rgba(239,68,68,0.15); color:#ef4444; }
+  .sp1 { background:rgba(249,115,22,0.15); color:#f97316; }
+  .sp2 { background:rgba(59,130,246,0.15); color:#3b82f6; }
+  .sp3 { background:rgba(16,185,129,0.15); color:#10b981; }
+  .sp4 { background:rgba(232,0,10,0.15); color:#cc0008; }
+
+  /* Spirit all-scores card */
+  .spirit-score-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:10px; }
+  .spirit-score-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .spirit-score-card-teams { font-weight:700; font-size:0.9rem; }
+  .spirit-score-card-meta { font-size:0.72rem; color:var(--muted); font-family:'Space Mono',monospace; }
+  .spirit-score-card-crits { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .spirit-score-card-crit { display:flex; align-items:center; gap:4px; font-size:0.78rem; }
+  .spirit-score-card-comment { font-size:0.78rem; color:var(--muted); font-style:italic; }
+
+
 </style>
 </head>
 <body>
@@ -386,6 +462,66 @@
     </div>
 
     <div class="rk-grid" id="rkgrid"></div>
+
+    <!-- SPIRIT RANKING -->
+    <div style="margin-top:28px;">
+      <div class="sec-title" style="font-size:1.1rem;margin-bottom:14px;">⭐ Ranking de Espíritu</div>
+      <div class="cat-tabs" style="margin-bottom:16px;">
+        <button class="cat-tab active" onclick="switchSpiritRkTab('open',this)">💪 Open</button>
+        <button class="cat-tab" onclick="switchSpiritRkTab('mixed',this)">⚡ Mixta</button>
+      </div>
+      <div id="spirit-ranking-list">
+        <div class="empty"><div class="ei">⭐</div><p>Sin calificaciones aún</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPIRIT FORM -->
+  <div id="section-spirit" class="section">
+    <div class="sec-title">⭐ Espíritu de Juego</div>
+    <div class="card">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--accent);margin-bottom:14px;">📋 INFORMACIÓN DEL PARTIDO</div>
+      <div class="fg">
+        <div class="fr">
+          <div>
+            <label>Categoría</label>
+            <select id="spirit-cat" onchange="buildSpiritSelects()">
+              <option value="open">Open</option>
+              <option value="mixed">Mixta</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr">
+          <div><label>Tu equipo</label><select id="spirit-from"><option value="">— Selecciona —</option></select></div>
+          <div><label>Equipo que calificas</label><select id="spirit-to"><option value="">— Selecciona —</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--accent);margin-bottom:16px;">🌟 CRITERIOS DE ESPÍRITU</div>
+      <div id="spirit-criteria"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--accent);margin-bottom:10px;">💬 COMENTARIO <span style="font-size:0.7rem;color:var(--muted)">(OPCIONAL)</span></div>
+      <input id="spirit-comment" type="text" placeholder="Algún comentario sobre el espíritu del equipo..." style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;">
+    </div>
+
+    <button class="btn bp" style="width:100%;padding:14px;font-size:1rem;letter-spacing:2px;" onclick="submitSpirit()">⭐ ENVIAR CALIFICACIÓN</button>
+
+    <!-- GENERAL VIEW -->
+    <div style="margin-top:32px;">
+      <div class="sec-title" style="font-size:1.1rem;margin-bottom:14px;">📋 Todas las Calificaciones</div>
+      <div class="cat-tabs" style="margin-bottom:16px;">
+        <button class="cat-tab active" onclick="switchSpiritAllTab('all',this)">Todas</button>
+        <button class="cat-tab" onclick="switchSpiritAllTab('open',this)">💪 Open</button>
+        <button class="cat-tab" onclick="switchSpiritAllTab('mixed',this)">⚡ Mixta</button>
+      </div>
+      <div id="spirit-all-list">
+        <div class="empty"><div class="ei">⭐</div><p>Sin calificaciones aún</p></div>
+      </div>
+    </div>
   </div>
 
   <!-- PLAYERS -->
@@ -515,7 +651,7 @@
 
 <script>
 // ── STATE ────────────────────────────────────────────────
-let S = { teams:[], players:[], matches:[], stats:[] };
+let S = { teams:[], players:[], matches:[], stats:[], spirit:[] };
 let _db = null, _fs = null, _fbReady = false;
 
 // ── ROLES ─────────────────────────────────────────────────
@@ -527,12 +663,14 @@ let _pendingRole = null;
 const NAV_BY_ROLE = {
   0: [ // Público
     { label:'🏆 Rankings',  section:'rankings' },
+    { label:'⭐ Espíritu',  section:'spirit'   },
     { label:'⚡ Partidos',  section:'matches'  },
     { label:'🔒 Planilla',  action:'loginPlanilla' },
   ],
   1: [ // Planilla
     { label:'⚡ En Vivo',   section:'live'     },
     { label:'🏆 Rankings',  section:'rankings' },
+    { label:'⭐ Espíritu',  section:'spirit'   },
     { label:'⚡ Partidos',  section:'matches'  },
     { label:'🔒 Admin',     action:'loginAdmin'},
     { label:'🚪 Salir',     action:'logout'    },
@@ -540,6 +678,7 @@ const NAV_BY_ROLE = {
   2: [ // Admin
     { label:'⚡ En Vivo',   section:'live'     },
     { label:'🏆 Rankings',  section:'rankings' },
+    { label:'⭐ Espíritu',  section:'spirit'   },
     { label:'👤 Jugadores', section:'players'  },
     { label:'🏟 Equipos',   section:'teams'    },
     { label:'⚡ Partidos',  section:'matches'  },
@@ -610,6 +749,7 @@ const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTNSNK7eOKov
 window.addEventListener('firebase-ready', async () => {
   _db = window._db; _fs = window._fs; _fbReady = true;
   await loadFromFirebase();
+  await loadSpiritFromFirebase();
   // Start on rankings for public role
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-rankings').classList.add('active');
@@ -666,6 +806,10 @@ async function loadSheetsPlayers() {
       return { name: (cols[0]||'').trim().replace(/^"|"$/g,''), rama: (cols[1]||'').trim().replace(/^"|"$/g,''), equipo: (cols[2]||'').trim().replace(/^"|"$/g,'') };
     }).filter(r => r.name && r.equipo);
     populateLiveTeamSelects();
+    buildSpiritSelects();
+    buildSpiritCriteria();
+    renderSpiritRanking();
+    renderSpiritAll();
     if (spin) spin.style.display = 'none';
     toast('✓ Jugadores cargados desde Sheets');
   } catch(e) {
@@ -894,6 +1038,7 @@ function go(name, btn) {
   if (name === 'teams')   renderTeams();
   if (name === 'rankings') renderRankings();
   if (name === 'matches')  renderMatches();
+  if (name === 'spirit') { buildSpiritSelects(); buildSpiritCriteria(); renderSpiritAll(); renderSpiritRanking(); }
 }
 
 // ── MODAL ────────────────────────────────────────────────
@@ -1176,6 +1321,341 @@ function renderMatches() {
           <button class="btn bd" style="padding:4px 10px;font-size:0.72rem;" onclick="deleteMatch('${m.id}')">🗑 Borrar</button>
           ` : ''}
         </span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SPIRIT ────────────────────────────────────────────────
+const SPIRIT_CRIT = [
+  { id:'rules',   name:'Conocimiento y Uso de las Reglas', icon:'📖', short:'Reglas'   },
+  { id:'contact', name:'Faltas y Contacto Físico',          icon:'🤝', short:'Contacto' },
+  { id:'fair',    name:'Imparcialidad',                     icon:'⚖️', short:'Fair'    },
+  { id:'attitude',name:'Actitud y Autocontrol',             icon:'😊', short:'Actitud'  },
+  { id:'comm',    name:'Comunicación',                      icon:'💬', short:'Comm'    },
+];
+const SPIRIT_LABELS = ['Pobre','No Muy Bueno','Normal','Muy Bueno','Excelente'];
+const SPIRIT_GUIDES = {
+  rules:{
+    0:'Repetidamente mostraron conocimiento pobre. Ignoraron o malinterpretaron reglas a propósito.',
+    1:'Falta general de conocimiento para el nivel de juego. Desestimaron las reglas en varias ocasiones.',
+    2:'Conocimiento apropiado para el nivel. No malinterpretaron a propósito. Comenzaron a tiempo.',
+    3:'Conocimiento superior al promedio. Ofrecieron al menos una vez ayudarnos a aprender reglas.',
+    4:'Conocimiento excelente. Explicaron reglas clara y eficientemente, contribuyendo a la alegría del juego.'
+  },
+  contact:{
+    0:'Continuaron con las mismas faltas incluso después de llamados repetidos. Varias jugadas peligrosas.',
+    1:'Demasiado contacto repetitivo no incidental. Al menos una jugada peligrosa o imprudente.',
+    2:'Sin contacto significativo más allá del incidental. Ningún jugador jugó de forma riesgosa.',
+    3:'Evitaron activamente el contacto al menos una vez. Jugaron con un estilo que evitó faltas innecesarias.',
+    4:'Tomaron varias decisiones claras para evitar contacto. El más alto nivel de cuidado y seguridad.'
+  },
+  fair:{
+    0:'Siempre creyeron tener razón. Muchos llamados injustificables. Algunos llamados en represalia.',
+    1:'Muchos llamados por fallas insignificantes. Frecuentemente solo vieron las cosas a su favor.',
+    2:'Respetaron y reconocieron nuestras opiniones aunque no estuvieran de acuerdo.',
+    3:'Al menos un caso en que informaron a compañeros sobre llamados incorrectos.',
+    4:'Varios ejemplos de jugadores que defendieron la verdad aunque no les beneficiara.'
+  },
+  attitude:{
+    0:'Jugadores frecuentemente groseros. Hubo confrontación física o verbal.',
+    1:'A veces faltó autocontrol. Celebraron nuestros errores hostilmente.',
+    2:'Generalmente mostraron autocontrol y actitud positiva. Fueron corteses.',
+    3:'Se esforzaron por hacer un juego bueno. Nos felicitaron por buenas jugadas.',
+    4:'Hicieron todo lo posible para que todos tuvieran un gran juego. Excelente autocontrol.'
+  },
+  comm:{
+    0:'Con frecuencia se negaron a discutir situaciones. Frecuentemente usaron lenguaje ofensivo.',
+    1:'Jugadores no involucrados se metieron sin que se les pidiera. Lenguaje corporal agresivo.',
+    2:'Los conflictos se resolvieron sin incidentes. Se comunicaron respetuosamente.',
+    3:'Dieron explicaciones claras y objetivas. Capitanes se comunicaron efectivamente.',
+    4:'Se comunicaron de manera extremadamente efectiva y respetuosa. Siempre usaron señales oficiales.'
+  }
+};
+let _spiritCv = {};
+let _spiritRkTab = 'open';
+let _editingSpiritId = null;
+
+async function loadSpiritFromFirebase() {
+  if (!_db) return;
+  const { collection, getDocs } = _fs;
+  try {
+    const snap = await getDocs(collection(_db, 'spirit'));
+    S.spirit = snap.docs.map(d => d.data());
+  } catch(e) { S.spirit = []; }
+}
+
+async function saveSpiritDoc(obj) {
+  if (!_db) return;
+  const { collection, doc, setDoc } = _fs;
+  await setDoc(doc(collection(_db, 'spirit'), String(obj.id)), obj);
+}
+
+async function deleteSpiritDoc(id) {
+  if (!_db) return;
+  const { collection, doc, deleteDoc } = _fs;
+  await deleteDoc(doc(collection(_db, 'spirit'), String(id)));
+}
+
+function buildSpiritSelects() {
+  const cat = document.getElementById('spirit-cat')?.value || 'open';
+  const appCat = cat === 'mixed' ? 'Mixta' : 'Open';
+  // Get unique team names from Sheets data filtered by category
+  const teams = [...new Set(_sheetsData.filter(p => normalizeCategory(p.rama) === normalizeCategory(appCat)).map(p => p.equipo))].sort();
+  const opts = '<option value="">— Selecciona —</option>' + teams.map(t => `<option value="${t}">${t}</option>`).join('');
+  const sf = document.getElementById('spirit-from');
+  const st = document.getElementById('spirit-to');
+  if (sf) sf.innerHTML = opts;
+  if (st) st.innerHTML = opts;
+}
+
+function buildSpiritCriteria() {
+  _spiritCv = {};
+  SPIRIT_CRIT.forEach(c => { _spiritCv[c.id] = -1; });
+  const el = document.getElementById('spirit-criteria');
+  if (!el) return;
+  el.innerHTML = SPIRIT_CRIT.map(c => `
+    <div class="spirit-criterion" id="scr-${c.id}">
+      <div class="spirit-crit-header">
+        <div class="spirit-crit-left">
+          <div class="spirit-crit-icon">${c.icon}</div>
+          <div class="spirit-crit-name">${c.name}</div>
+        </div>
+        <div class="spirit-score-badge" id="sdisp-${c.id}">—</div>
+      </div>
+      <div class="spirit-score-row">
+        ${[0,1,2,3,4].map(v => `<button class="spirit-score-btn s${v}" id="ssb-${c.id}-${v}" onclick="setSpiritScore('${c.id}',${v})">${v}</button>`).join('')}
+      </div>
+      <div class="spirit-score-labels">
+        <span>0 Pobre</span><span>2 Normal</span><span>4 Excelente</span>
+      </div>
+      <button class="spirit-guide-toggle" onclick="toggleSpiritGuide('${c.id}')">
+        📋 Ver guía de calificación <span class="gt-arr">▼</span>
+      </button>
+      <div class="spirit-guide-panel" id="sguide-${c.id}">
+        <table class="spirit-guide-table">
+          <thead><tr><th>Puntaje</th><th>Descripción</th></tr></thead>
+          <tbody>
+            ${[0,1,2,3,4].map(v => `<tr>
+              <td><span class="spirit-score-pill sp${v}">${v} — ${SPIRIT_LABELS[v]}</span></td>
+              <td>${SPIRIT_GUIDES[c.id][v]}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`).join('');
+}
+
+function setSpiritScore(cid, val) {
+  _spiritCv[cid] = val;
+  const disp = document.getElementById('sdisp-' + cid);
+  if (disp) { disp.textContent = val; disp.style.color = ['#ef4444','#f97316','#3b82f6','#10b981','#cc0008'][val]; }
+  document.getElementById('scr-' + cid)?.classList.add('filled');
+  [0,1,2,3,4].forEach(v => {
+    document.getElementById(`ssb-${cid}-${v}`)?.classList.toggle('active', v === val);
+  });
+}
+
+function toggleSpiritGuide(cid) {
+  document.getElementById('scr-' + cid)?.classList.toggle('guide-open');
+}
+
+let _spiritAllTab = 'all';
+function switchSpiritAllTab(tab, btn) {
+  _spiritAllTab = tab;
+  document.querySelectorAll('#section-spirit .cat-tabs .cat-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderSpiritAll();
+}
+
+function renderSpiritAll() {
+  const el = document.getElementById('spirit-all-list');
+  if (!el) return;
+  const list = [...(S.spirit || [])].filter(s => _spiritAllTab === 'all' || s.cat === _spiritAllTab)
+    .sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">⭐</div><p>Sin calificaciones aún</p></div>';
+    return;
+  }
+  const catLabel = { open:'💪 Open', mixed:'⚡ Mixta' };
+  el.innerHTML = list.map(s => {
+    const critBadges = SPIRIT_CRIT.map(c =>
+      `<span class="spirit-score-card-crit">${c.icon}<span class="spirit-score-pill sp${s.criteria[c.id]}">${s.criteria[c.id]}</span></span>`
+    ).join('');
+    const adminBtns = _role === ROLES.admin
+      ? `<div style="display:flex;gap:6px;margin-top:8px;">
+           <button class="btn-spirit-edit" onclick="editSpirit('${s.id}')">✏️ Editar</button>
+           <button class="btn-spirit-del" onclick="deleteSpirit('${s.id}')">🗑 Eliminar</button>
+         </div>` : '';
+    return `<div class="spirit-score-card">
+      <div class="spirit-score-card-header">
+        <div>
+          <div class="spirit-score-card-teams">${s.from} → <strong>${s.to}</strong></div>
+          <div class="spirit-score-card-meta">${catLabel[s.cat]||s.cat} · ${s.ts}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);line-height:1;">${s.total}</div>
+          <div style="font-size:0.68rem;color:var(--muted);font-family:'Space Mono',monospace;">/ 20 PTS</div>
+        </div>
+      </div>
+      <div class="spirit-score-card-crits">${critBadges}</div>
+      ${s.comment ? `<div class="spirit-score-card-comment">💬 "${s.comment}"</div>` : ''}
+      ${adminBtns}
+    </div>`;
+  }).join('');
+}
+
+async function submitSpirit() {
+  const cat  = document.getElementById('spirit-cat')?.value || 'open';
+  const from = document.getElementById('spirit-from')?.value;
+  const to   = document.getElementById('spirit-to')?.value;
+  if (!from) return toast('⚠ Selecciona tu equipo');
+  if (!to)   return toast('⚠ Selecciona el equipo a calificar');
+  if (from === to) return toast('⚠ No puedes calificarte a ti mismo');
+  const miss = SPIRIT_CRIT.find(c => _spiritCv[c.id] === -1 || _spiritCv[c.id] === undefined);
+  if (miss) return toast('⚠ Falta calificar: ' + miss.name);
+
+  const total = SPIRIT_CRIT.reduce((s, c) => s + _spiritCv[c.id], 0);
+  const entry = {
+    id: 'sp_' + Date.now(),
+    cat, from, to,
+    criteria: { ...SPIRIT_CRIT.reduce((o,c) => ({ ...o, [c.id]: _spiritCv[c.id] }), {}) },
+    total,
+    comment: document.getElementById('spirit-comment')?.value || '',
+    ts: new Date().toLocaleString('es-CO')
+  };
+
+  if (!S.spirit) S.spirit = [];
+  if (_editingSpiritId) {
+    const idx = S.spirit.findIndex(s => String(s.id) === String(_editingSpiritId));
+    if (idx !== -1) { S.spirit[idx] = { ...S.spirit[idx], ...entry, id: _editingSpiritId }; entry.id = _editingSpiritId; }
+    _editingSpiritId = null;
+    document.querySelector('#section-spirit .btn.bp') && null;
+  } else {
+    S.spirit.push(entry);
+  }
+  await saveSpiritDoc(entry);
+  buildSpiritCriteria();
+  if (document.getElementById('spirit-comment')) document.getElementById('spirit-comment').value = '';
+  toast('✓ Calificación de espíritu enviada');
+  renderSpiritRanking();
+  renderSpiritAll();
+}
+
+let _spiritEditData = null;
+function editSpirit(id) {
+  const s = (S.spirit || []).find(x => String(x.id) === String(id));
+  if (!s) return;
+  _editingSpiritId = id;
+  go('spirit', null);
+  setTimeout(() => {
+    const catEl = document.getElementById('spirit-cat');
+    if (catEl) { catEl.value = s.cat; buildSpiritSelects(); }
+    setTimeout(() => {
+      const sf = document.getElementById('spirit-from'); if (sf) sf.value = s.from;
+      const st = document.getElementById('spirit-to');   if (st) st.value = s.to;
+      buildSpiritCriteria();
+      setTimeout(() => {
+        SPIRIT_CRIT.forEach(c => { if (s.criteria[c.id] !== undefined) setSpiritScore(c.id, s.criteria[c.id]); });
+        const sc = document.getElementById('spirit-comment'); if (sc) sc.value = s.comment || '';
+      }, 50);
+    }, 50);
+  }, 50);
+  toast('✏ Editando calificación — modifica y envía');
+}
+
+async function deleteSpirit(id) {
+  if (!confirm('¿Eliminar esta calificación de espíritu?')) return;
+  S.spirit = (S.spirit || []).filter(s => String(s.id) !== String(id));
+  await deleteSpiritDoc(id);
+  renderSpiritRanking();
+  renderSpiritAll();
+  toast('✓ Calificación eliminada');
+}
+
+function switchSpiritRkTab(tab, btn) {
+  _spiritRkTab = tab;
+  document.querySelectorAll('#section-rankings .cat-tabs:last-of-type .cat-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderSpiritRanking();
+}
+
+function renderSpiritRanking() {
+  const el = document.getElementById('spirit-ranking-list');
+  if (!el) return;
+  const spirits = (S.spirit || []).filter(s => s.cat === _spiritRkTab);
+  // Get unique teams in this category from Sheets
+  const appCat = _spiritRkTab === 'mixed' ? 'Mixta' : 'Open';
+  const allTeams = [...new Set(_sheetsData.filter(p => normalizeCategory(p.rama) === normalizeCategory(appCat)).map(p => p.equipo))];
+  // Also include any teams from spirit scores not in Sheets
+  (S.spirit || []).filter(s => s.cat === _spiritRkTab).forEach(s => { if (!allTeams.includes(s.to)) allTeams.push(s.to); });
+
+  if (!allTeams.length && !spirits.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">⭐</div><p>Sin datos aún</p></div>';
+    return;
+  }
+
+  const data = allTeams.map(team => {
+    const rec = spirits.filter(s => s.to === team);
+    if (!rec.length) return { team, avg: 0, counts: 0, by: {}, rec: [] };
+    const by = {};
+    SPIRIT_CRIT.forEach(c => { by[c.id] = rec.reduce((s, r) => s + (r.criteria[c.id] || 0), 0) / rec.length; });
+    return { team, avg: rec.reduce((s, r) => s + r.total, 0) / rec.length, counts: rec.length, by, rec };
+  }).filter(d => d.counts > 0).sort((a, b) => b.avg - a.avg);
+
+  if (!data.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">⭐</div><p>Sin calificaciones aún</p></div>';
+    return;
+  }
+
+  const medals = ['🥇','🥈','🥉'];
+  const posClass = ['p1','p2','p3'];
+  el.innerHTML = data.map((d, i) => {
+    const pct = (d.avg / 20) * 100;
+    const bdCells = SPIRIT_CRIT.map(c => `
+      <div class="spirit-bd-cell">
+        <div class="spirit-bd-icon">${c.icon}</div>
+        <div class="spirit-bd-val">${(d.by[c.id] || 0).toFixed(1)}</div>
+        <div class="spirit-bd-label">${c.short}</div>
+      </div>`).join('');
+    const histRows = d.rec.map(r => {
+      const adminBtns = _role === ROLES.admin
+        ? `<td><button class="btn-spirit-edit" onclick="editSpirit('${r.id}');event.stopPropagation()">✏️</button><button class="btn-spirit-del" onclick="deleteSpirit('${r.id}');event.stopPropagation()">🗑</button></td>`
+        : '<td></td>';
+      return `<tr>
+        <td style="font-size:0.78rem;font-weight:600;">${r.from}</td>
+        <td style="font-size:0.7rem;color:var(--muted);">${r.ts}</td>
+        ${SPIRIT_CRIT.map(c => `<td style="text-align:center;font-weight:700;font-size:0.85rem;">${r.criteria[c.id]}</td>`).join('')}
+        <td style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--accent);">${r.total}</td>
+        <td style="font-size:0.7rem;color:var(--muted);max-width:120px;">${r.comment || '—'}</td>
+        ${adminBtns}
+      </tr>`;
+    }).join('');
+
+    return `<div class="spirit-rank-item ${posClass[i]||''}" onclick="this.classList.toggle('expanded')">
+      <div class="spirit-rank-pos ${posClass[i]||''}">${medals[i] || i+1}</div>
+      <div class="spirit-rank-info">
+        <div class="spirit-rank-name">${d.team}</div>
+        <div class="spirit-rank-meta">${d.counts} calificación${d.counts!==1?'es':''} · toca para detalles</div>
+        <div class="spirit-rank-bar"><div class="spirit-rank-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="spirit-rank-score">
+        <div class="spirit-rank-num">${d.avg.toFixed(1)}</div>
+        <div class="spirit-rank-sub">/ 20 PTS</div>
+      </div>
+      <div class="spirit-breakdown" onclick="event.stopPropagation()">
+        <div class="spirit-bd-grid">${bdCells}</div>
+        <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border);">
+          <table class="tbl" style="font-size:0.78rem;">
+            <thead><tr>
+              <th>Calificado por</th><th>Fecha</th>
+              ${SPIRIT_CRIT.map(c=>`<th>${c.icon}</th>`).join('')}
+              <th>Total</th><th>Comentario</th>
+              ${_role === ROLES.admin ? '<th></th>' : ''}
+            </tr></thead>
+            <tbody>${histRows}</tbody>
+          </table>
+        </div>
       </div>
     </div>`;
   }).join('');
