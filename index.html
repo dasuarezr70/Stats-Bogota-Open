@@ -770,6 +770,7 @@ window.addEventListener('firebase-ready', async () => {
   renderNav('rankings');
   renderTeams(); renderPlayers(); renderRankings(); renderMatches();
   await loadSheetsPlayers();
+  await restoreLiveMatch();
 });
 
 // ── FIREBASE LOAD ────────────────────────────────────────
@@ -852,7 +853,84 @@ function populateLiveTeamSelects() {
 }
 
 // ── LIVE MATCH STATE ─────────────────────────────────────
-let _live = null; // { matchId, teamA, teamB, scoreA, scoreB, phase, cat, date, events[] }
+let _live = null; // { matchId, teamA, teamB, scoreA, scoreB, phase, cat, events[] }
+
+const LIVE_LS_KEY = 'bo_live_match';
+
+// Save _live to localStorage AND Firebase
+async function saveLiveState() {
+  if (!_live) return;
+  // localStorage — instantáneo
+  try { localStorage.setItem(LIVE_LS_KEY, JSON.stringify(_live)); } catch(e) {}
+  // Firebase — respaldo en la nube
+  if (_db) {
+    const { collection, doc, setDoc } = _fs;
+    try {
+      await setDoc(doc(collection(_db, 'live_matches'), _live.matchId), _live);
+    } catch(e) { console.warn('Firebase live save error', e); }
+  }
+}
+
+// Clear live state from localStorage and Firebase
+async function clearLiveState() {
+  try { localStorage.removeItem(LIVE_LS_KEY); } catch(e) {}
+  if (_live && _db) {
+    const { collection, doc, deleteDoc } = _fs;
+    try { await deleteDoc(doc(collection(_db, 'live_matches'), _live.matchId)); } catch(e) {}
+  }
+}
+
+// Try to restore a live match on page load
+async function restoreLiveMatch() {
+  // 1. Try localStorage first (fastest)
+  let saved = null;
+  try {
+    const raw = localStorage.getItem(LIVE_LS_KEY);
+    if (raw) saved = JSON.parse(raw);
+  } catch(e) {}
+
+  // 2. If not in localStorage, try Firebase
+  if (!saved && _db) {
+    const { collection, getDocs } = _fs;
+    try {
+      const snap = await getDocs(collection(_db, 'live_matches'));
+      if (!snap.empty) {
+        // Take the most recent live match
+        const docs = snap.docs.map(d => d.data());
+        docs.sort((a, b) => {
+          const tsA = a.matchId?.replace('live_','') || 0;
+          const tsB = b.matchId?.replace('live_','') || 0;
+          return Number(tsB) - Number(tsA);
+        });
+        saved = docs[0];
+      }
+    } catch(e) { console.warn('Firebase live restore error', e); }
+  }
+
+  if (!saved) return;
+
+  // Ask user if they want to restore
+  const msg = `Se encontró un partido en curso:\n${saved.teamA} vs ${saved.teamB} (${saved.phase} · ${saved.cat})\nMarcador: ${saved.scoreA} — ${saved.scoreB}\n${saved.events?.length || 0} eventos registrados\n\n¿Deseas retomar este partido?`;
+  if (!confirm(msg)) {
+    await clearLiveState();
+    return;
+  }
+
+  _live = saved;
+  // Navigate to live section if has access
+  if (NAV_BY_ROLE[_role].some(i => i.section === 'live')) {
+    go('live', null);
+    // Wait for Sheets to load players then show match panel
+    setTimeout(() => {
+      document.getElementById('live-setup-panel').style.display = 'none';
+      document.getElementById('live-match-panel').style.display = 'block';
+      renderLiveScoreboard();
+      renderLiveColumns();
+      renderLiveLog();
+    }, 500);
+  }
+  toast('✓ Partido restaurado');
+}
 
 function startLiveMatch() {
   const teamA = document.getElementById('live-team-a').value.trim();
@@ -878,6 +956,7 @@ function startLiveMatch() {
 
   const matchId = 'live_' + Date.now();
   _live = { matchId, teamA, teamB, scoreA:0, scoreB:0, phase, cat, events:[] };
+  saveLiveState();
 
   document.getElementById('live-setup-panel').style.display = 'none';
   document.getElementById('live-match-panel').style.display = 'block';
@@ -940,9 +1019,9 @@ function registerStat(teamKey, playerName, statType) {
     if (teamKey === 'A') _live.scoreA++;
     else _live.scoreB++;
   }
+  saveLiveState();
   renderLiveScoreboard();
   renderLiveLog();
-  // Flash feedback
   toast(`✓ ${playerName} — ${statLabel(statType)}`);
 }
 
@@ -968,6 +1047,7 @@ function undoLast() {
     if (last.teamKey === 'A') _live.scoreA = Math.max(0, _live.scoreA - 1);
     else _live.scoreB = Math.max(0, _live.scoreB - 1);
   }
+  saveLiveState();
   renderLiveScoreboard();
   renderLiveLog();
   toast('↩ Último evento deshecho');
@@ -1027,6 +1107,7 @@ async function closeLiveMatch() {
   }
 
   toast('✓ Partido guardado en Firebase');
+  await clearLiveState();
   _live = null;
   document.getElementById('live-match-panel').style.display = 'none';
   document.getElementById('live-setup-panel').style.display = 'block';
@@ -1035,6 +1116,7 @@ async function closeLiveMatch() {
 
 function cancelLiveMatch() {
   if (!confirm('¿Cancelar partido? Se perderán todos los eventos no guardados.')) return;
+  clearLiveState();
   _live = null;
   document.getElementById('live-match-panel').style.display = 'none';
   document.getElementById('live-setup-panel').style.display = 'block';
