@@ -671,8 +671,24 @@ let _db = null, _fs = null, _fbReady = false;
 // ── ROLES ─────────────────────────────────────────────────
 const ROLES = { public: 0, planilla: 1, admin: 2 };
 const PASS  = { planilla: 'planilla2025', admin: 'admin2025' };
+const ROLE_LS_KEY = 'bo_role';
 let _role = ROLES.public;
 let _pendingRole = null;
+
+// Restore role from localStorage on load
+function restoreRole() {
+  try {
+    const saved = localStorage.getItem(ROLE_LS_KEY);
+    if (saved !== null) {
+      const r = parseInt(saved);
+      if (r === ROLES.planilla || r === ROLES.admin) {
+        _role = r;
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
+}
 
 const NAV_BY_ROLE = {
   0: [ // Público
@@ -736,6 +752,7 @@ function submitLogin() {
   const roleKey = _pendingRole === ROLES.planilla ? 'planilla' : 'admin';
   if (pass === PASS[roleKey]) {
     _role = _pendingRole;
+    try { localStorage.setItem(ROLE_LS_KEY, String(_role)); } catch(e) {}
     closeModal('om-login');
     // Navigate to first section of new role
     const first = NAV_BY_ROLE[_role].find(i => i.section);
@@ -751,6 +768,7 @@ function submitLogin() {
 
 function logout() {
   _role = ROLES.public;
+  try { localStorage.removeItem(ROLE_LS_KEY); } catch(e) {}
   go('rankings', null);
   toast('✓ Sesión cerrada');
 }
@@ -764,7 +782,9 @@ window.addEventListener('firebase-ready', async () => {
   _db = window._db; _fs = window._fs; _fbReady = true;
   await loadFromFirebase();
   await loadSpiritFromFirebase();
-  // Start on rankings for public role
+  // Restore role from localStorage
+  restoreRole();
+  // Start on rankings (or live if party in progress)
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-rankings').classList.add('active');
   renderNav('rankings');
@@ -1758,7 +1778,8 @@ function renderSpiritRanking() {
 }
 
 // ── INIT ─────────────────────────────────────────────────
-// Show rankings by default for public role
+// Restore role immediately so nav renders correctly
+restoreRole();
 document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
 document.getElementById('section-rankings').classList.add('active');
 renderNav('rankings');
