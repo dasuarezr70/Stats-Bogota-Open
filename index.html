@@ -1114,7 +1114,7 @@ async function closeLiveMatch() {
         S.teams.push(team);
         await saveDoc('teams', team);
       }
-      player = { id: 'p_' + Date.now() + Math.random(), name: sv.playerName, teamId: team.id, number:'' };
+      player = { id: 'p_' + Date.now() + Math.random(), name: sv.playerName, teamId: team.id, teamName: teamName, number:'' };
       S.players.push(player);
       await saveDoc('players', player);
     }
@@ -1235,7 +1235,7 @@ function renderPlayers() {
   const tb = document.getElementById('ptbody');
   if (!S.players.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:36px;color:var(--muted);">Sin jugadores registrados</td></tr>'; return; }
   tb.innerHTML = S.players.map(p => {
-    const team = S.teams.find(t => t.id===p.teamId);
+    const team = S.teams.find(t => String(t.id) === String(p.teamId));
     const s = getStats(p.id);
     return `<tr>
       <td><strong>${p.name}</strong>${p.number?`<span style="font-size:0.75rem;color:var(--muted);margin-left:5px;">#${p.number}</span>`:''}</td>
@@ -1328,10 +1328,15 @@ function renderRankings() {
     const active = list.filter(r => r.s[key]>0);
     if (!active.length) return '<div class="empty" style="padding:24px;"><div class="ei" style="font-size:1.6rem;">—</div><p>Sin datos aún</p></div>';
     return active.map((r,i) => {
-      const team = S.teams.find(t => t.id===r.p.teamId);
+      const team = S.teams.find(t => String(t.id) === String(r.p.teamId))
+        || S.teams.find(t => t.name && S.stats.filter(s=>String(s.playerId)===String(r.p.id)).some(s => {
+          const m = S.matches.find(x=>String(x.id)===String(s.matchId));
+          return m && (m.teamName?.toLowerCase()===t.name?.toLowerCase() || m.rivalName?.toLowerCase()===t.name?.toLowerCase());
+        }));
+      const teamName = team?.name || r.p.teamName || '';
       return `<div class="rkrow">
         <div class="rkpos ${i<3?'p'+(i+1):''}">${medals[i]||i+1}</div>
-        <div><div class="rkpname">${r.p.name}</div><div class="rkteam">${team?team.name:'—'}</div></div>
+        <div><div class="rkpname">${r.p.name}</div><div class="rkteam">${teamName||'—'}</div></div>
         <div class="rkval">${r.s[key]}</div>
       </div>`;
     }).join('');
@@ -1845,7 +1850,7 @@ function saveEdit() {
 function exportCSV() {
   const rows = [['Jugador','Equipo','Partidos','Goles','Asistencias','Defensas']];
   S.players.forEach(p => {
-    const team = S.teams.find(t=>t.id===p.teamId);
+    const team = S.teams.find(t => String(t.id) === String(p.teamId));
     const s = getStats(p.id);
     rows.push([`"${p.name}"`, team?`"${team.name}"`:'', s.matches, s.goals, s.assists, s.defenses]);
   });
