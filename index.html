@@ -774,57 +774,260 @@ function logout() {
 }
 
 
-// Sheets public CSV URL
+// ── SHEETS URL ───────────────────────────────────────────
 const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTNSNK7eOKov5dywy43dzrNOaEaCSFc6F4yzd7jzeZGWi2SSjzGrfW9Ae9zS9rOJa9BYah6Oi7-UvTE/pub?output=csv';
+
+// ── CACHE KEYS ───────────────────────────────────────────
+const CACHE_KEY    = 'bo_cache_v1';
+const CACHE_TS_KEY = 'bo_cache_ts';
+const CACHE_TTL    = 1000 * 60 * 60 * 6; // 6 horas antes de refrescar desde Firebase
+const WRITE_QUEUE_KEY = 'bo_write_queue';
+
+// Guardar estado completo en localStorage
+function saveCache() {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      teams: S.teams, players: S.players, matches: S.matches,
+      stats: S.stats, spirit: S.spirit
+    }));
+    localStorage.setItem(CACHE_TS_KEY, Date.now().toString());
+  } catch(e) { console.warn('Cache save error', e); }
+}
+
+// Cargar desde localStorage
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    S.teams   = data.teams   || [];
+    S.players = data.players || [];
+    S.matches = data.matches || [];
+    S.stats   = data.stats   || [];
+    S.spirit  = data.spirit  || [];
+    return true;
+  } catch(e) { return false; }
+}
+
+// ¿El caché está vigente?
+function isCacheFresh() {
+  try {
+    const ts = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
+    return (Date.now() - ts) < CACHE_TTL;
+  } catch(e) { return false; }
+}
+
+// ── WRITE QUEUE ──────────────────────────────────────────
+// Cola de escrituras pendientes cuando Firebase no está disponible
+function loadWriteQueue() {
+  try { return JSON.parse(localStorage.getItem(WRITE_QUEUE_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveWriteQueue(q) {
+  try { localStorage.setItem(WRITE_QUEUE_KEY, JSON.stringify(q)); } catch(e) {}
+}
+function enqueueWrite(colName, obj) {
+  const q = loadWriteQueue();
+  // Replace if same id already queued
+  const idx = q.findIndex(x => x.col === colName && String(x.obj.id) === String(obj.id));
+  if (idx !== -1) q[idx] = { col: colName, obj };
+  else q.push({ col: colName, obj });
+  saveWriteQueue(q);
+}
+function enqueueDelete(colName, id) {
+  const q = loadWriteQueue();
+  // Remove any pending write for same doc, add delete op
+  const filtered = q.filter(x => !(x.col === colName && String(x.obj?.id) === String(id)));
+  filtered.push({ col: colName, id: String(id), isDelete: true });
+  saveWriteQueue(filtered);
+}
+
+// Flush pending writes to Firebase
+async function flushWriteQueue() {
+  if (!_db) return;
+  const q = loadWriteQueue();
+  if (!q.length) return;
+  const { collection, doc, setDoc, deleteDoc } = _fs;
+  const failed = [];
+  for (const op of q) {
+    try {
+      if (op.isDelete) {
+        await deleteDoc(doc(collection(_db, op.col), op.id));
+      } else {
+        await setDoc(doc(collection(_db, op.col), String(op.obj.id)), op.obj);
+      }
+    } catch(e) {
+      console.warn('Write queue flush error', e);
+      failed.push(op);
+    }
+  }
+  saveWriteQueue(failed);
+  if (!failed.length) console.log('✓ Write queue flushed');
+}
 
 // Wait for Firebase module to load
 window.addEventListener('firebase-ready', async () => {
   _db = window._db; _fs = window._fs; _fbReady = true;
-  await loadFromFirebase();
-  await loadSpiritFromFirebase();
-  // Restore role from localStorage
+
+  // Restore role immediately
   restoreRole();
-  // Start on rankings (or live if party in progress)
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-rankings').classList.add('active');
-  renderNav('rankings');
-  renderTeams(); renderPlayers(); renderRankings(); renderMatches();
-  await loadSheetsPlayers();
-  await restoreLiveMatch();
+
+  // 1. Load from cache first — instant, no quota
+  const hasCachedData = loadCache();
+  if (hasCachedData) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-rankings').classList.add('active');
+    renderNav('rankings');
+    renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+    await loadSheetsPlayers();
+    await restoreLiveMatch();
+  }
+
+  // 2. If cache is stale or empty, refresh from Firebase
+  if (!hasCachedData || !isCacheFresh()) {
+    try {
+      await loadFromFirebase();
+      await loadSpiritFromFirebase();
+      saveCache(); // Update cache with fresh data
+      if (!hasCachedData) {
+        // First load — render everything
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-rankings').classList.add('active');
+        renderNav('rankings');
+        renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+        await loadSheetsPlayers();
+        await restoreLiveMatch();
+      } else {
+        // Refresh — just re-render silently
+        renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+      }
+    } catch(e) {
+      console.warn('Firebase load failed, using cache:', e);
+    }
+  }
+
+  // 3. Flush any pending writes from when Firebase was unavailable
+  await flushWriteQueue();
 });
 
 // ── FIREBASE LOAD ────────────────────────────────────────
 async function loadFromFirebase() {
   if (!_db) return;
   const { collection, getDocs } = _fs;
-  try {
-    const [teamsSnap, playersSnap, matchesSnap, statsSnap] = await Promise.all([
-      getDocs(collection(_db,'teams')),
-      getDocs(collection(_db,'players')),
-      getDocs(collection(_db,'matches')),
-      getDocs(collection(_db,'stats')),
-    ]);
-    S.teams   = teamsSnap.docs.map(d => d.data());
-    S.players = playersSnap.docs.map(d => d.data());
-    S.matches = matchesSnap.docs.map(d => d.data());
-    S.stats   = statsSnap.docs.map(d => d.data());
-  } catch(e) { console.error('Firebase load error', e); }
+  const [teamsSnap, playersSnap, matchesSnap, statsSnap] = await Promise.all([
+    getDocs(collection(_db,'teams')),
+    getDocs(collection(_db,'players')),
+    getDocs(collection(_db,'matches')),
+    getDocs(collection(_db,'stats')),
+  ]);
+  S.teams   = teamsSnap.docs.map(d => d.data());
+  S.players = playersSnap.docs.map(d => d.data());
+  S.matches = matchesSnap.docs.map(d => d.data());
+  S.stats   = statsSnap.docs.map(d => d.data());
+
+  // Auto-fix orphan players after loading
+  await fixOrphanPlayers();
+}
+
+// ── FIX ORPHAN PLAYERS ───────────────────────────────────
+// Finds players whose teamId doesn't exist in S.teams and fixes them
+// by looking up which team they played for in S.matches
+async function fixOrphanPlayers() {
+  const teamIds = new Set(S.teams.map(t => String(t.id)));
+  const orphans = S.players.filter(p => p.teamId && !teamIds.has(String(p.teamId)));
+  if (!orphans.length) return;
+
+  let fixed = 0;
+  for (const player of orphans) {
+    // Find which team name this player played for by looking at matches + stats
+    const playerStats = S.stats.filter(s => String(s.playerId) === String(player.id));
+    let foundTeamName = null;
+
+    for (const stat of playerStats) {
+      const match = S.matches.find(m => String(m.id) === String(stat.matchId));
+      if (!match) continue;
+      // Check if player name appears in teamA or teamB events
+      // We don't have event-level data in stats, so use teamName from match
+      // Try to find the team by cross-referencing other players in same match
+      const matchPlayers = S.stats
+        .filter(s => String(s.matchId) === String(stat.matchId))
+        .map(s => S.players.find(p => String(p.id) === String(s.playerId)))
+        .filter(Boolean);
+
+      // Find a teammate with a valid teamId
+      const teammate = matchPlayers.find(mp =>
+        String(mp.id) !== String(player.id) &&
+        mp.teamId &&
+        teamIds.has(String(mp.teamId))
+      );
+
+      if (teammate) {
+        const team = S.teams.find(t => String(t.id) === String(teammate.teamId));
+        if (team) { foundTeamName = team.name; break; }
+      }
+
+      // Fallback: use teamName or rivalName from match
+      if (match.teamName) { foundTeamName = match.teamName; break; }
+    }
+
+    // Also check player.teamName field (set by newer code)
+    if (!foundTeamName && player.teamName) {
+      foundTeamName = player.teamName;
+    }
+
+    if (!foundTeamName) continue;
+
+    // Find or create the team
+    let team = S.teams.find(t => t.name?.toLowerCase() === foundTeamName.toLowerCase());
+    if (!team) {
+      team = { id: 't_' + Date.now() + Math.random(), name: foundTeamName, city:'', color:'#c0272d' };
+      S.teams.push(team);
+      await saveDoc('teams', team);
+    }
+
+    // Update player's teamId
+    player.teamId = team.id;
+    player.teamName = team.name;
+    await saveDoc('players', player);
+    fixed++;
+  }
+
+  if (fixed > 0) {
+    console.log(`✓ Fixed ${fixed} orphan player(s)`);
+    saveCache();
+  }
 }
 
 // ── FIREBASE SAVE ────────────────────────────────────────
 async function saveDoc(colName, obj) {
-  if (!_db) return;
+  // 1. Update in-memory state is already done by caller
+  // 2. Save to cache immediately
+  saveCache();
+  // 3. Try Firebase — if fails, enqueue for later
+  if (!_db) { enqueueWrite(colName, obj); return; }
   const { collection, doc, setDoc } = _fs;
-  await setDoc(doc(collection(_db, colName), String(obj.id)), obj);
-}
-async function deleteFireDoc(colName, id) {
-  if (!_db) return;
-  const { collection, doc, deleteDoc } = _fs;
-  await deleteDoc(doc(collection(_db, colName), String(id)));
+  try {
+    await setDoc(doc(collection(_db, colName), String(obj.id)), obj);
+  } catch(e) {
+    console.warn('Firebase write failed, queuing:', e);
+    enqueueWrite(colName, obj);
+  }
 }
 
-// Legacy save shim (keeps existing code working)
-const save = () => {}; // no-op — Firebase is source of truth
+async function deleteFireDoc(colName, id) {
+  // Update cache
+  saveCache();
+  if (!_db) { enqueueDelete(colName, id); return; }
+  const { collection, doc, deleteDoc } = _fs;
+  try {
+    await deleteDoc(doc(collection(_db, colName), String(id)));
+  } catch(e) {
+    console.warn('Firebase delete failed, queuing:', e);
+    enqueueDelete(colName, id);
+  }
+}
+
+// Legacy save shim
+const save = () => {}; // no-op — cache handles persistence
 
 // ── SHEETS LOADER ────────────────────────────────────────
 let _sheetsData = []; // { name, equipo, rama }
@@ -1127,6 +1330,7 @@ async function closeLiveMatch() {
   }
 
   toast('✓ Partido guardado en Firebase');
+  saveCache();
   await clearLiveState();
   _live = null;
   document.getElementById('live-match-panel').style.display = 'none';
@@ -1500,22 +1704,26 @@ let _editingSpiritId = null;
 async function loadSpiritFromFirebase() {
   if (!_db) return;
   const { collection, getDocs } = _fs;
-  try {
-    const snap = await getDocs(collection(_db, 'spirit'));
-    S.spirit = snap.docs.map(d => d.data());
-  } catch(e) { S.spirit = []; }
+  const snap = await getDocs(collection(_db, 'spirit'));
+  S.spirit = snap.docs.map(d => d.data());
 }
 
 async function saveSpiritDoc(obj) {
-  if (!_db) return;
+  saveCache();
+  if (!_db) { enqueueWrite('spirit', obj); return; }
   const { collection, doc, setDoc } = _fs;
-  await setDoc(doc(collection(_db, 'spirit'), String(obj.id)), obj);
+  try {
+    await setDoc(doc(collection(_db, 'spirit'), String(obj.id)), obj);
+  } catch(e) { console.warn('Spirit write failed, queuing:', e); enqueueWrite('spirit', obj); }
 }
 
 async function deleteSpiritDoc(id) {
-  if (!_db) return;
+  saveCache();
+  if (!_db) { enqueueDelete('spirit', id); return; }
   const { collection, doc, deleteDoc } = _fs;
-  await deleteDoc(doc(collection(_db, 'spirit'), String(id)));
+  try {
+    await deleteDoc(doc(collection(_db, 'spirit'), String(id)));
+  } catch(e) { console.warn('Spirit delete failed, queuing:', e); enqueueDelete('spirit', id); }
 }
 
 function buildSpiritSelects() {
