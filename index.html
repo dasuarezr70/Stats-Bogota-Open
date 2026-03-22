@@ -7,7 +7,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCX5ZwBUFPhGB-biI4Shg192re9S2QgQbM",
@@ -21,7 +21,7 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
   window._db = db;
-  window._fs = { collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, query, orderBy };
+  window._fs = { collection, doc, setDoc, getDocs, deleteDoc };
   window.dispatchEvent(new Event('firebase-ready'));
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -59,9 +59,15 @@
   nav button.active { background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; box-shadow:0 4px 12px rgba(192,39,45,0.3); border-color:transparent; }
 
   main { max-width: 1140px; margin: 0 auto; padding: 28px 40px; position: relative; z-index: 1; }
-  .section { display: none; animation: slideIn 0.25s ease; }
-  .section.active { display: block; }
-  @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .section { display: none; }
+  .section.active { display: block; animation: slideIn 0.2s ease; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .section.active { animation: none; }
+    .loading-spinner { animation: none; }
+    .loading-bar::after { animation: none; }
+    .spirit-rank-bar-fill { transition: none; }
+  }
   .sec-title { font-family:'Oswald', sans-serif; font-size:1.5rem; letter-spacing:2px; text-transform:uppercase; color:var(--text); margin-bottom:22px; display:flex; align-items:center; gap:14px; }
   .sec-title::after { content:''; flex:1; height:2px; background:linear-gradient(90deg, var(--accent), transparent); }
 
@@ -245,7 +251,8 @@
   .live-log-undo   { cursor:pointer; color:#c0272d; font-size:0.8rem; padding:2px 6px; border-radius:4px; transition:background 0.15s; }
   .live-log-undo:hover { background:rgba(232,0,10,0.15); }
 
-  .loading-spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+  .loading-spinner { display:none; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+  .loading-spinner.active { display:inline-block; }
 
   /* SPIRIT */
   .spirit-criterion { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; transition:border-color 0.2s; }
@@ -405,7 +412,7 @@
       </div>
       <button class="btn bp" style="width:100%;" onclick="startLiveMatch()">⚡ Iniciar Partido</button>
       <div style="margin-top:12px;text-align:center;">
-        <button class="btn bs" style="font-size:0.78rem;" onclick="reloadSheets()"><span id="sheets-spin" style="display:none;" class="loading-spinner"></span>🔄 Recargar jugadores desde Sheets</button>
+        <button class="btn bs" style="font-size:0.78rem;" onclick="reloadSheets()"><span id="sheets-spin" class="loading-spinner"></span>🔄 Recargar jugadores desde Sheets</button>
       </div>
     </div>
 
@@ -877,9 +884,10 @@ window.addEventListener('firebase-ready', async () => {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-rankings').classList.add('active');
     renderNav('rankings');
-    renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+    markDirty('teams','players','rankings','matches','spirit');
+    renderIfDirty('rankings'); // render visible section only
     await loadSheetsPlayers();
-    await restoreLiveMatch();
+    restoreLiveMatch();
   }
 
   // 2. If cache is stale or empty, refresh from Firebase
@@ -893,12 +901,14 @@ window.addEventListener('firebase-ready', async () => {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById('section-rankings').classList.add('active');
         renderNav('rankings');
-        renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+        markDirty('teams','players','rankings','matches','spirit');
+        renderIfDirty('rankings');
         await loadSheetsPlayers();
-        await restoreLiveMatch();
+        restoreLiveMatch();
       } else {
         // Refresh — just re-render silently
-        renderTeams(); renderPlayers(); renderRankings(); renderMatches();
+        markDirty('teams','players','rankings','matches','spirit');
+        renderIfDirty('rankings'); // silently refresh visible section
       }
     } catch(e) {
       console.warn('Firebase load failed, using cache:', e);
@@ -981,7 +991,7 @@ let _sheetsData = []; // { name, equipo, rama }
 
 async function loadSheetsPlayers() {
   const spin = document.getElementById('sheets-spin');
-  if (spin) spin.style.display = 'inline-block';
+  if (spin) spin.classList.add('active');
   try {
     const resp = await fetch(SHEETS_URL);
     const text = await resp.text();
@@ -993,12 +1003,15 @@ async function loadSheetsPlayers() {
     populateLiveTeamSelects();
     buildSpiritSelects();
     buildSpiritCriteria();
-    renderSpiritRanking();
-    renderSpiritAll();
-    if (spin) spin.style.display = 'none';
+    markDirty('rankings'); // teams now resolved from Sheets
+    // Only render spirit sections if currently visible
+    const activeSection = document.querySelector('.section.active')?.id;
+    if (activeSection === 'section-spirit') { renderSpiritRanking(); renderSpiritAll(); }
+    if (activeSection === 'section-rankings') renderRankings();
+    if (spin) spin.classList.remove('active');
     toast('✓ Jugadores cargados desde Sheets');
   } catch(e) {
-    if (spin) spin.style.display = 'none';
+    if (spin) spin.classList.remove('active');
     console.error('Sheets load error', e);
     toast('⚠ No se pudo cargar el Sheets — usando datos locales');
     populateLiveTeamSelects();
@@ -1027,78 +1040,49 @@ let _live = null; // { matchId, teamA, teamB, scoreA, scoreB, phase, cat, events
 
 const LIVE_LS_KEY = 'bo_live_match';
 
-// Save _live to localStorage AND Firebase
-async function saveLiveState() {
+// Save _live to localStorage only — each device owns its own match
+function saveLiveState() {
   if (!_live) return;
-  // localStorage — instantáneo
   try { localStorage.setItem(LIVE_LS_KEY, JSON.stringify(_live)); } catch(e) {}
-  // Firebase — respaldo en la nube
-  if (_db) {
-    const { collection, doc, setDoc } = _fs;
-    try {
-      await setDoc(doc(collection(_db, 'live_matches'), _live.matchId), _live);
-    } catch(e) { console.warn('Firebase live save error', e); }
-  }
 }
 
-// Clear live state from localStorage and Firebase
-async function clearLiveState() {
+// Clear live state from localStorage only
+function clearLiveState() {
   try { localStorage.removeItem(LIVE_LS_KEY); } catch(e) {}
-  if (_live && _db) {
-    const { collection, doc, deleteDoc } = _fs;
-    try { await deleteDoc(doc(collection(_db, 'live_matches'), _live.matchId)); } catch(e) {}
-  }
 }
 
-// Try to restore a live match on page load
-async function restoreLiveMatch() {
-  // 1. Try localStorage first (fastest)
+// Try to restore a live match on page load — localStorage only
+function restoreLiveMatch() {
+  // Only check localStorage — never Firebase (each device owns its own match)
   let saved = null;
   try {
     const raw = localStorage.getItem(LIVE_LS_KEY);
     if (raw) saved = JSON.parse(raw);
   } catch(e) {}
 
-  // 2. If not in localStorage, try Firebase
-  if (!saved && _db) {
-    const { collection, getDocs } = _fs;
-    try {
-      const snap = await getDocs(collection(_db, 'live_matches'));
-      if (!snap.empty) {
-        // Take the most recent live match
-        const docs = snap.docs.map(d => d.data());
-        docs.sort((a, b) => {
-          const tsA = a.matchId?.replace('live_','') || 0;
-          const tsB = b.matchId?.replace('live_','') || 0;
-          return Number(tsB) - Number(tsA);
-        });
-        saved = docs[0];
-      }
-    } catch(e) { console.warn('Firebase live restore error', e); }
-  }
-
   if (!saved) return;
 
-  // Ask user if they want to restore
-  const msg = `Se encontró un partido en curso:\n${saved.teamA} vs ${saved.teamB} (${saved.phase} · ${saved.cat})\nMarcador: ${saved.scoreA} — ${saved.scoreB}\n${saved.events?.length || 0} eventos registrados\n\n¿Deseas retomar este partido?`;
+  // Only restore if role has access to live section
+  if (!NAV_BY_ROLE[_role].some(i => i.section === 'live')) {
+    clearLiveState();
+    return;
+  }
+
+  const msg = `Hay un partido en curso en este dispositivo:\n${saved.teamA} vs ${saved.teamB} (${saved.phase} · ${saved.cat})\nMarcador: ${saved.scoreA} — ${saved.scoreB}\n${saved.events?.length || 0} eventos registrados\n\n¿Deseas retomarlo?`;
   if (!confirm(msg)) {
-    await clearLiveState();
+    clearLiveState();
     return;
   }
 
   _live = saved;
-  // Navigate to live section if has access
-  if (NAV_BY_ROLE[_role].some(i => i.section === 'live')) {
-    go('live', null);
-    // Wait for Sheets to load players then show match panel
-    setTimeout(() => {
-      document.getElementById('live-setup-panel').style.display = 'none';
-      document.getElementById('live-match-panel').style.display = 'block';
-      renderLiveScoreboard();
-      renderLiveColumns();
-      renderLiveLog();
-    }, 500);
-  }
+  go('live', null);
+  requestAnimationFrame(() => {
+    document.getElementById('live-setup-panel').style.display = 'none';
+    document.getElementById('live-match-panel').style.display = 'block';
+    renderLiveScoreboard();
+    renderLiveColumns();
+    renderLiveLog();
+  });
   toast('✓ Partido restaurado');
 }
 
@@ -1278,11 +1262,11 @@ async function closeLiveMatch() {
 
   toast('✓ Partido guardado en Firebase');
   saveCache();
-  await clearLiveState();
+  clearLiveState();
   _live = null;
   document.getElementById('live-match-panel').style.display = 'none';
   document.getElementById('live-setup-panel').style.display = 'block';
-  renderMatches(); renderRankings();
+  markDirty('matches','rankings','players','teams');
 }
 
 function cancelLiveMatch() {
@@ -1293,6 +1277,20 @@ function cancelLiveMatch() {
   document.getElementById('live-setup-panel').style.display = 'block';
 }
 
+// ── DIRTY FLAG RENDER SYSTEM ─────────────────────────────
+// Tracks which sections need re-rendering
+const _dirty = { players:true, teams:true, rankings:true, matches:true, spirit:true };
+function markDirty(...sections) { sections.forEach(s => _dirty[s] = true); }
+function renderIfDirty(name) {
+  if (!_dirty[name]) return;
+  _dirty[name] = false;
+  if (name === 'players')  renderPlayers();
+  if (name === 'teams')    renderTeams();
+  if (name === 'rankings') renderRankings();
+  if (name === 'matches')  renderMatches();
+  if (name === 'spirit')   { renderSpiritAll(); renderSpiritRanking(); }
+}
+
 // ── NAV ─────────────────────────────────────────────────
 function go(name, btn) {
   // Guard: check role has access
@@ -1301,11 +1299,11 @@ function go(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-' + name).classList.add('active');
   renderNav(name);
-  if (name === 'players') renderPlayers();
-  if (name === 'teams')   renderTeams();
-  if (name === 'rankings') renderRankings();
-  if (name === 'matches')  renderMatches();
-  if (name === 'spirit') { buildSpiritSelects(); buildSpiritCriteria(); renderSpiritAll(); renderSpiritRanking(); }
+  if (name === 'players')  renderIfDirty('players');
+  if (name === 'teams')    renderIfDirty('teams');
+  if (name === 'rankings') renderIfDirty('rankings');
+  if (name === 'matches')  renderIfDirty('matches');
+  if (name === 'spirit')   { buildSpiritSelects(); buildSpiritCriteria(); renderIfDirty('spirit'); }
 }
 
 // ── MODAL ────────────────────────────────────────────────
@@ -1347,7 +1345,7 @@ function saveTeam() {
   const team = { id: Date.now(), name, city: document.getElementById('tc').value.trim(), color: document.getElementById('tco').value };
   S.teams.push(team);
   saveDoc('teams', team);
-  closeModal('om-team'); renderTeams(); toast('✓ Equipo guardado');
+  closeModal('om-team'); markDirty('teams','rankings'); renderTeams(); toast('✓ Equipo guardado');
   document.getElementById('tn').value = '';
 }
 function renderTeams() {
@@ -1369,7 +1367,7 @@ function delTeam(id) {
   if (hasMatches) return toast('⚠ No se puede eliminar: el equipo tiene partidos registrados');
   S.teams = S.teams.filter(t => String(t.id) !== sid);
   deleteFireDoc('teams', sid);
-  renderTeams(); toast('Equipo eliminado');
+  markDirty('rankings'); renderTeams(); toast('Equipo eliminado');
 }
 
 // ── PLAYERS ──────────────────────────────────────────────
@@ -1379,7 +1377,7 @@ function savePlayer() {
   const player = { id: Date.now(), name, teamId: parseInt(document.getElementById('pt').value)||null, number: document.getElementById('pnum').value||'' };
   S.players.push(player);
   saveDoc('players', player);
-  closeModal('om-player'); renderPlayers(); toast('✓ Jugador guardado');
+  closeModal('om-player'); markDirty('rankings'); renderPlayers(); toast('✓ Jugador guardado');
   document.getElementById('pn').value = '';
 }
 function renderPlayers() {
@@ -1405,7 +1403,7 @@ function delPlayer(id) {
   if (hasStats) return toast('⚠ No se puede eliminar: tiene estadísticas registradas');
   S.players = S.players.filter(p => String(p.id) !== sid);
   deleteFireDoc('players', sid);
-  renderPlayers(); toast('Jugador eliminado');
+  markDirty('rankings'); renderPlayers(); toast('Jugador eliminado');
 }
 
 // ── RANKINGS ─────────────────────────────────────────────
@@ -1819,19 +1817,18 @@ function editSpirit(id) {
   if (!s) return;
   _editingSpiritId = id;
   go('spirit', null);
-  setTimeout(() => {
+  // Use single rAF to batch all DOM updates in one frame
+  requestAnimationFrame(() => {
     const catEl = document.getElementById('spirit-cat');
     if (catEl) { catEl.value = s.cat; buildSpiritSelects(); }
-    setTimeout(() => {
-      const sf = document.getElementById('spirit-from'); if (sf) sf.value = s.from;
-      const st = document.getElementById('spirit-to');   if (st) st.value = s.to;
-      buildSpiritCriteria();
-      setTimeout(() => {
-        SPIRIT_CRIT.forEach(c => { if (s.criteria[c.id] !== undefined) setSpiritScore(c.id, s.criteria[c.id]); });
-        const sc = document.getElementById('spirit-comment'); if (sc) sc.value = s.comment || '';
-      }, 50);
-    }, 50);
-  }, 50);
+    const sf = document.getElementById('spirit-from'); if (sf) sf.value = s.from;
+    const st = document.getElementById('spirit-to');   if (st) st.value = s.to;
+    buildSpiritCriteria();
+    requestAnimationFrame(() => {
+      SPIRIT_CRIT.forEach(c => { if (s.criteria[c.id] !== undefined) setSpiritScore(c.id, s.criteria[c.id]); });
+      const sc = document.getElementById('spirit-comment'); if (sc) sc.value = s.comment || '';
+    });
+  });
   toast('✏ Editando calificación — modifica y envía');
 }
 
@@ -1933,12 +1930,13 @@ function renderSpiritRanking() {
 }
 
 // ── INIT ─────────────────────────────────────────────────
+// ── INIT ─────────────────────────────────────────────────
 // Restore role immediately so nav renders correctly
 restoreRole();
 document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
 document.getElementById('section-rankings').classList.add('active');
 renderNav('rankings');
-renderTeams();
+// Data loads via Firebase — sections render on demand via dirty flags
 
 function deleteMatch(id) {
   if (!confirm('¿Eliminar este partido y todas sus estadísticas?')) return;
@@ -1948,7 +1946,7 @@ function deleteMatch(id) {
   S.stats   = S.stats.filter(s => String(s.matchId) !== sid);
   S.matches = S.matches.filter(m => String(m.id) !== sid);
   deleteFireDoc('matches', sid);
-  renderMatches(); toast('✓ Partido eliminado');
+  markDirty('rankings'); renderMatches(); toast('✓ Partido eliminado');
 }
 
 // ── EDIT MATCH ────────────────────────────────────────────
@@ -1992,7 +1990,7 @@ function saveEdit() {
   if (newTn) m.teamName  = newTn;
   if (newRn) m.rivalName = newRn;
 
-  closeModal('om-edit'); renderMatches(); toast('✓ Partido actualizado');
+  closeModal('om-edit'); markDirty('rankings'); renderMatches(); toast('✓ Partido actualizado');
   saveDoc('matches', m);
 }
 
